@@ -1,0 +1,50 @@
+from sqlmodel import SQLModel, Field, Relationship
+from typing import List, Optional
+
+# --- Link tables ---
+class ItemLocationLink(SQLModel, table=True):
+    item_id: Optional[int] = Field(default=None, foreign_key="item.id", primary_key=True)
+    ubicacion_id: Optional[int] = Field(default=None, foreign_key="ubicacion.id", primary_key=True)
+
+class ItemInteraccionLink(SQLModel, table=True):
+    item_id: Optional[int] = Field(default=None, foreign_key="item.id", primary_key=True)
+    interaccion_id: Optional[int] = Field(default=None, foreign_key="interaccion.id", primary_key=True)
+
+
+# --- Modelos principales ---
+class Categoria(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    descripcion: Optional[str] = None
+
+    items: List["Item"] = Relationship(back_populates="categoria")
+
+
+class Item(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    descripcion: Optional[str] = None
+    costo: Optional[int] = None
+    indispensable: bool = False
+    categoria_id: Optional[int] = Field(default=None, foreign_key="categoria.id")
+
+    categoria: Optional[Categoria] = Relationship(back_populates="items")
+
+    ubicaciones: List["Ubicacion"] = Relationship(back_populates="items", link_model=ItemLocationLink)
+    interacciones: List["Interaccion"] = Relationship(back_populates="items", link_model=ItemInteraccionLink)
+
+
+class Ubicacion(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    tipo: Optional[str] = None
+    descripcion: Optional[str] = None
+
+    items: List[Item] = Relationship(back_populates="ubicaciones", link_model=ItemLocationLink)
+
+
+class Interaccion(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    descripcion: str
+
+    items: List[Item] = Relationship(back_populates="interacciones", link_model=ItemInteraccionLink)

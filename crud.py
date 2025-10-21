@@ -46,6 +46,17 @@ def delete_categoria(session: Session, categoria_id: int) -> bool:
     return True
 
 # --- Ubicaciones
+
+def create_ubicacion(session: Session, nombre: str, tipo: str | None, descripcion: str | None) -> Ubicacion:
+    u = Ubicacion(nombre=nombre, tipo=tipo, descripcion=descripcion)
+    session.add(u)
+    session.commit()
+    session.refresh(u)
+    return u
+
+def list_ubicaciones(session: Session):
+    return session.exec(select(Ubicacion)).all()
+
 def get_ubicacion(session: Session, ubicacion_id: int):
     return session.get(Ubicacion, ubicacion_id)
 
@@ -71,6 +82,17 @@ def delete_ubicacion(session: Session, ubicacion_id: int):
 
 
 # --- Interacciones
+
+def create_interaccion(session: Session, descripcion: str) -> Interaccion:
+    i = Interaccion(descripcion=descripcion)
+    session.add(i)
+    session.commit()
+    session.refresh(i)
+    return i
+
+def list_interacciones(session: Session):
+    return session.exec(select(Interaccion)).all()
+
 def get_interaccion(session: Session, interaccion_id: int):
     return session.get(Interaccion, interaccion_id)
 

@@ -7,6 +7,7 @@ from typing import Optional, List
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
+
 # ---------------------------
 # CREATE
 # ---------------------------
@@ -24,6 +25,26 @@ def crear_item(item_in: ItemCreate, session: Session = Depends(get_session)):
 @router.get("/", response_model=List[ItemRead])
 def listar_items(session: Session = Depends(get_session)):
     items = crud.listar_items(session)
+    return items
+
+# ---------------------------
+# SEARCH / FILTER
+# ---------------------------
+@router.get("/search", response_model=List[ItemRead])
+def buscar_items(
+    categoria_id: Optional[int] = Query(default=None),
+    ubicacion_id: Optional[int] = Query(default=None),
+    indispensable: Optional[bool] = Query(default=None),
+    nombre: Optional[str] = Query(default=None),
+    session: Session = Depends(get_session)
+):
+    items = crud.buscar_items(
+        session,
+        categoria_id=categoria_id,
+        ubicacion_id=ubicacion_id,
+        indispensable=indispensable,
+        nombre=nombre,
+    )
     return items
 
 
@@ -59,23 +80,15 @@ def borrar_item(item_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
     return {"ok": True}
 
+# ---------------------------
+# READ ONE (DETALLADO)
+# ---------------------------
+from schemas import ItemReadFull
 
-# ---------------------------
-# SEARCH / FILTER
-# ---------------------------
-@router.get("/search", response_model=List[ItemRead])
-def buscar_items(
-    categoria_id: Optional[int] = Query(default=None),
-    ubicacion_id: Optional[int] = Query(default=None),
-    indispensable: Optional[bool] = Query(default=None),
-    nombre: Optional[str] = Query(default=None),
-    session: Session = Depends(get_session)
-):
-    items = crud.buscar_items(
-        session,
-        categoria_id=categoria_id,
-        ubicacion_id=ubicacion_id,
-        indispensable=indispensable,
-        nombre=nombre,
-    )
-    return items
+@router.get("/{item_id}/detalles", response_model=ItemReadFull)
+def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)):
+    item = crud.get_item(session, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+    # al tener relaciones cargadas, FastAPI devolverá toda la estructura completa
+    return item

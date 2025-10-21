@@ -78,3 +78,20 @@ class ItemUpdate(SQLModel):
     categoria_id: Optional[int] = None
     ubicacion_ids: Optional[List[int]] = None
     interaccion_ids: Optional[List[int]] = None
+
+# ==============================
+# 🧭 ITEM DETALLADO (RELACIONES COMPLETAS)
+# ==============================
+from typing import TYPE_CHECKING
+if TYPE_CHECKING:
+    from .schemas import CategoriaRead, UbicacionRead, InteraccionRead
+
+class ItemReadFull(ItemBase):
+    id: int
+    categoria: Optional["CategoriaRead"] = None
+    ubicaciones: List["UbicacionRead"] = []
+    interacciones: List["InteraccionRead"] = []
+
+    model_config = {
+        "from_attributes": True  # equivale a orm_mode=True
+    }

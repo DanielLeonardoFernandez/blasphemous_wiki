@@ -3,6 +3,7 @@ from models import Item, Categoria, Ubicacion, Interaccion, ItemLocationLink, It
 from schemas import ItemCreate, ItemUpdate
 from typing import List, Optional
 from sqlalchemy.orm import selectinload
+from sqlalchemy import func
 
 
 # --- Categorias
@@ -144,26 +145,25 @@ def crear_item(session: Session, data: ItemCreate) -> Item:
     return item
 
 def listar_items(session: Session):
-    stmt = (
+    return session.exec(
         select(Item)
         .options(
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
-    )
-    return session.exec(stmt).all()
+    ).all()
 
 
 def get_item(session: Session, item_id: int) -> Item | None:
-    stmt = (
+    return session.exec(
         select(Item)
         .where(Item.id == item_id)
         .options(
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
-    )
-    return session.exec(stmt).first()
+    ).first()
+
 
 
 def update_item(session: Session, item_id: int, data: ItemUpdate) -> Item | None:
@@ -213,7 +213,10 @@ def buscar_items(
     indispensable: Optional[bool] = None,
     nombre: Optional[str] = None
 ) -> List[Item]:
-    query = select(Item)
+    query = select(Item).options(
+        selectinload(Item.ubicaciones),
+        selectinload(Item.interacciones)
+    )
 
     if categoria_id is not None:
         query = query.where(Item.categoria_id == categoria_id)
@@ -222,11 +225,10 @@ def buscar_items(
         query = query.where(Item.indispensable == indispensable)
 
     if nombre is not None:
-        query = query.where(Item.nombre.contains(nombre))
+        query = query.where(func.lower(Item.nombre).contains(nombre.lower()))
 
     items = session.exec(query).all()
 
-    # filtrar por ubicación (requiere revisar relación many-to-many)
     if ubicacion_id is not None:
         items = [it for it in items if any(u.id == ubicacion_id for u in it.ubicaciones)]
 

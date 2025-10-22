@@ -2,6 +2,8 @@ from sqlmodel import Session, select
 from models import Item, Categoria, Ubicacion, Interaccion, ItemLocationLink, ItemInteraccionLink
 from schemas import ItemCreate, ItemUpdate
 from typing import List, Optional
+from sqlalchemy.orm import selectinload
+
 
 # --- Categorias
 def create_categoria(session: Session, nombre: str, descripcion: str | None = None) -> Categoria:
@@ -142,10 +144,27 @@ def crear_item(session: Session, data: ItemCreate) -> Item:
     return item
 
 def listar_items(session: Session):
-    return session.exec(select(Item)).all()
+    stmt = (
+        select(Item)
+        .options(
+            selectinload(Item.ubicaciones),
+            selectinload(Item.interacciones)
+        )
+    )
+    return session.exec(stmt).all()
+
 
 def get_item(session: Session, item_id: int) -> Item | None:
-    return session.get(Item, item_id)
+    stmt = (
+        select(Item)
+        .where(Item.id == item_id)
+        .options(
+            selectinload(Item.ubicaciones),
+            selectinload(Item.interacciones)
+        )
+    )
+    return session.exec(stmt).first()
+
 
 def update_item(session: Session, item_id: int, data: ItemUpdate) -> Item | None:
     item = session.get(Item, item_id)
@@ -212,3 +231,15 @@ def buscar_items(
         items = [it for it in items if any(u.id == ubicacion_id for u in it.ubicaciones)]
 
     return items
+
+def get_item_detallado(session: Session, item_id: int) -> Item | None:
+    stmt = (
+        select(Item)
+        .where(Item.id == item_id)
+        .options(
+            selectinload(Item.categoria),
+            selectinload(Item.ubicaciones),
+            selectinload(Item.interacciones)
+        )
+    )
+    return session.exec(stmt).first()

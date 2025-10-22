@@ -1,5 +1,7 @@
 fastapi
-uvicorn
+uvicorn[standard]
 sqlmodel
 sqlalchemy
 pydantic
+pydantic-settings
+typing_extensions

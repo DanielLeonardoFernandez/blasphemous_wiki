@@ -16,8 +16,10 @@ class Categoria(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     descripcion: Optional[str] = None
+    activo: bool = Field(default=True)  # ✅ agregado
 
     items: List["Item"] = Relationship(back_populates="categoria")
+
 
 
 class Item(SQLModel, table=True):
@@ -27,6 +29,7 @@ class Item(SQLModel, table=True):
     costo: Optional[int] = None
     indispensable: bool = False
     categoria_id: Optional[int] = Field(default=None, foreign_key="categoria.id")
+    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
 
     categoria: Optional[Categoria] = Relationship(back_populates="items")
 
@@ -39,12 +42,13 @@ class Ubicacion(SQLModel, table=True):
     nombre: str
     tipo: Optional[str] = None
     descripcion: Optional[str] = None
+    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
 
     items: List[Item] = Relationship(back_populates="ubicaciones", link_model=ItemLocationLink)
-
 
 class Interaccion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     descripcion: str
+    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
 
     items: List[Item] = Relationship(back_populates="interacciones", link_model=ItemInteraccionLink)

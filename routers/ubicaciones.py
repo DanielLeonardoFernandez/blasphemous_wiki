@@ -47,3 +47,20 @@ def delete_ubicacion(ubicacion_id: int, session: Session = Depends(get_session))
     if not ok:
         raise HTTPException(status_code=404, detail="Ubicación no encontrada")
     return {"ok": True}
+
+# Restaurar una ubicación eliminada (soft delete)
+@router.put("/{ubicacion_id}/restaurar")
+def restaurar_ubicacion(ubicacion_id: int, session: Session = Depends(get_session)):
+    ok = crud.restaurar_ubicacion(session, ubicacion_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Ubicación no encontrada")
+    return {"ok": True, "mensaje": "Ubicación restaurada correctamente"}
+
+# Listar ubicaciones eliminadas (soft delete)
+@router.get("/eliminadas", response_model=list[UbicacionRead])
+def listar_ubicaciones_eliminadas(session: Session = Depends(get_session)):
+    ubicaciones = crud.listar_ubicaciones_eliminadas(session)
+    return [
+        UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion)
+        for u in ubicaciones
+    ]

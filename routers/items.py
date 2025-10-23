@@ -91,3 +91,18 @@ def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)
     if not item:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
     return item
+# ---------------------------
+# RESTAURAR (activar ítem eliminado)
+# ---------------------------
+@router.put("/{item_id}/restaurar")
+def restaurar_item(item_id: int, session: Session = Depends(get_session)):
+    ok = crud.restaurar_item(session, item_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+    return {"ok": True, "mensaje": "Ítem restaurado correctamente"}
+
+# Listar ítems eliminados (soft delete)
+@router.get("/eliminados", response_model=list[ItemRead])
+def listar_items_eliminados(session: Session = Depends(get_session)):
+    items = crud.listar_items_eliminados(session)
+    return items

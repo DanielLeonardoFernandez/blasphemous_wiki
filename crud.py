@@ -6,7 +6,6 @@ from sqlalchemy.orm import selectinload
 from sqlalchemy import func
 
 
-# --- Categorias
 def create_categoria(session: Session, nombre: str, descripcion: str | None = None) -> Categoria:
     cat = Categoria(nombre=nombre, descripcion=descripcion)
     session.add(cat)
@@ -16,16 +15,21 @@ def create_categoria(session: Session, nombre: str, descripcion: str | None = No
 
 
 def list_categorias(session: Session):
-    return session.exec(select(Categoria)).all()
+    # ✅ Solo las categorías activas
+    return session.exec(select(Categoria).where(Categoria.activo == True)).all()
 
 
 def get_categoria(session: Session, categoria_id: int) -> Categoria | None:
-    return session.get(Categoria, categoria_id)
+    # ✅ Solo categorías activas
+    return session.exec(
+        select(Categoria)
+        .where(Categoria.id == categoria_id, Categoria.activo == True)
+    ).first()
 
 
 def update_categoria(session: Session, categoria_id: int, nombre: str | None, descripcion: str | None) -> Categoria | None:
     categoria = session.get(Categoria, categoria_id)
-    if not categoria:
+    if not categoria or not categoria.activo:
         return None
 
     if nombre is not None:
@@ -40,13 +44,29 @@ def update_categoria(session: Session, categoria_id: int, nombre: str | None, de
 
 
 def delete_categoria(session: Session, categoria_id: int) -> bool:
+    # ✅ Soft delete
+    categoria = session.get(Categoria, categoria_id)
+    if not categoria or not categoria.activo:
+        return False
+    categoria.activo = False
+    session.add(categoria)
+    session.commit()
+    return True
+
+
+# ✅ Nuevo: restaurar una categoría
+def restaurar_categoria(session: Session, categoria_id: int) -> bool:
     categoria = session.get(Categoria, categoria_id)
     if not categoria:
         return False
-
-    session.delete(categoria)
+    categoria.activo = True
+    session.add(categoria)
     session.commit()
     return True
+
+def listar_categorias_eliminadas(session: Session):
+    return session.exec(select(Categoria).where(Categoria.activo == False)).all()
+
 
 # --- Ubicaciones
 
@@ -57,15 +77,23 @@ def create_ubicacion(session: Session, nombre: str, tipo: str | None, descripcio
     session.refresh(u)
     return u
 
+
 def list_ubicaciones(session: Session):
-    return session.exec(select(Ubicacion)).all()
+    # ✅ Solo ubicaciones activas
+    return session.exec(select(Ubicacion).where(Ubicacion.activo == True)).all()
+
 
 def get_ubicacion(session: Session, ubicacion_id: int):
-    return session.get(Ubicacion, ubicacion_id)
+    # ✅ Ignora las inactivas
+    return session.exec(
+        select(Ubicacion)
+        .where(Ubicacion.id == ubicacion_id, Ubicacion.activo == True)
+    ).first()
+
 
 def update_ubicacion(session: Session, ubicacion_id: int, nombre: str, tipo: str | None, descripcion: str | None):
     u = session.get(Ubicacion, ubicacion_id)
-    if not u:
+    if not u or not u.activo:
         return None
     u.nombre = nombre
     u.tipo = tipo
@@ -75,13 +103,30 @@ def update_ubicacion(session: Session, ubicacion_id: int, nombre: str, tipo: str
     session.refresh(u)
     return u
 
+
 def delete_ubicacion(session: Session, ubicacion_id: int):
+    # ✅ Soft delete
+    u = session.get(Ubicacion, ubicacion_id)
+    if not u or not u.activo:
+        return False
+    u.activo = False
+    session.add(u)
+    session.commit()
+    return True
+
+
+# ✅ Nuevo: restaurar una ubicación
+def restaurar_ubicacion(session: Session, ubicacion_id: int) -> bool:
     u = session.get(Ubicacion, ubicacion_id)
     if not u:
         return False
-    session.delete(u)
+    u.activo = True
+    session.add(u)
     session.commit()
     return True
+
+def listar_ubicaciones_eliminadas(session: Session):
+    return session.exec(select(Ubicacion).where(Ubicacion.activo == False)).all()
 
 
 # --- Interacciones
@@ -93,15 +138,23 @@ def create_interaccion(session: Session, descripcion: str) -> Interaccion:
     session.refresh(i)
     return i
 
+
 def list_interacciones(session: Session):
-    return session.exec(select(Interaccion)).all()
+    # ✅ Solo interacciones activas
+    return session.exec(select(Interaccion).where(Interaccion.activo == True)).all()
+
 
 def get_interaccion(session: Session, interaccion_id: int):
-    return session.get(Interaccion, interaccion_id)
+    # ✅ Ignora las inactivas
+    return session.exec(
+        select(Interaccion)
+        .where(Interaccion.id == interaccion_id, Interaccion.activo == True)
+    ).first()
+
 
 def update_interaccion(session: Session, interaccion_id: int, descripcion: str):
     i = session.get(Interaccion, interaccion_id)
-    if not i:
+    if not i or not i.activo:
         return None
     i.descripcion = descripcion
     session.add(i)
@@ -109,13 +162,31 @@ def update_interaccion(session: Session, interaccion_id: int, descripcion: str):
     session.refresh(i)
     return i
 
+
 def delete_interaccion(session: Session, interaccion_id: int):
+    # ✅ Soft delete
+    i = session.get(Interaccion, interaccion_id)
+    if not i or not i.activo:
+        return False
+    i.activo = False
+    session.add(i)
+    session.commit()
+    return True
+
+
+# ✅ Nuevo: restaurar interacción
+def restaurar_interaccion(session: Session, interaccion_id: int) -> bool:
     i = session.get(Interaccion, interaccion_id)
     if not i:
         return False
-    session.delete(i)
+    i.activo = True
+    session.add(i)
     session.commit()
     return True
+
+def listar_interacciones_eliminadas(session: Session):
+    return session.exec(select(Interaccion).where(Interaccion.activo == False)).all()
+
 
 # --- Items
 def crear_item(session: Session, data: ItemCreate) -> Item:
@@ -146,7 +217,9 @@ def crear_item(session: Session, data: ItemCreate) -> Item:
 
 def listar_items(session: Session):
     items = session.exec(
-        select(Item).options(
+        select(Item)
+        .where(Item.activo == True)  # ✅ solo activos
+        .options(
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
@@ -171,16 +244,14 @@ def listar_items(session: Session):
 def get_item(session: Session, item_id: int):
     item = session.exec(
         select(Item)
-        .where(Item.id == item_id)
+        .where(Item.id == item_id, Item.activo == True)
         .options(
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
     ).first()
-
     if not item:
         return None
-
     return {
         "id": item.id,
         "nombre": item.nombre,
@@ -191,6 +262,7 @@ def get_item(session: Session, item_id: int):
         "ubicacion_ids": [u.id for u in item.ubicaciones],
         "interaccion_ids": [i.id for i in item.interacciones]
     }
+
 
 
 
@@ -230,9 +302,23 @@ def delete_item(session: Session, item_id: int) -> bool:
     it = session.get(Item, item_id)
     if not it:
         return False
-    session.delete(it)
+    it.activo = False  # ✅ marcar como inactivo
+    session.add(it)
     session.commit()
     return True
+
+def restaurar_item(session: Session, item_id: int) -> bool:
+    it = session.get(Item, item_id)
+    if not it:
+        return False
+    it.activo = True
+    session.add(it)
+    session.commit()
+    return True
+
+def listar_items_eliminados(session: Session):
+    return session.exec(select(Item).where(Item.activo == False)).all()
+
 
 def buscar_items(
     session: Session,

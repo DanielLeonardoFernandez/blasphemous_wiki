@@ -44,3 +44,17 @@ def delete_interaccion(interaccion_id: int, session: Session = Depends(get_sessi
     if not ok:
         raise HTTPException(status_code=404, detail="Interacción no encontrada")
     return {"ok": True}
+
+# Restaurar una interacción eliminada (soft delete)
+@router.put("/{interaccion_id}/restaurar")
+def restaurar_interaccion(interaccion_id: int, session: Session = Depends(get_session)):
+    ok = crud.restaurar_interaccion(session, interaccion_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Interacción no encontrada")
+    return {"ok": True, "mensaje": "Interacción restaurada correctamente"}
+
+# Listar interacciones eliminadas (soft delete)
+@router.get("/eliminadas", response_model=list[InteraccionRead])
+def listar_interacciones_eliminadas(session: Session = Depends(get_session)):
+    interacciones = crud.listar_interacciones_eliminadas(session)
+    return [InteraccionRead(id=i.id, descripcion=i.descripcion) for i in interacciones]

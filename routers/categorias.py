@@ -45,3 +45,17 @@ def delete_categoria(categoria_id: int, session: Session = Depends(get_session))
     if not success:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return {"ok": True}
+
+# Restaurar una categoría eliminada (soft delete)
+@router.put("/{categoria_id}/restaurar")
+def restaurar_categoria(categoria_id: int, session: Session = Depends(get_session)):
+    ok = crud.restaurar_categoria(session, categoria_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return {"ok": True, "mensaje": "Categoría restaurada correctamente"}
+
+# Listar categorías eliminadas (soft delete)
+@router.get("/eliminadas", response_model=list[CategoriaRead])
+def listar_categorias_eliminadas(session: Session = Depends(get_session)):
+    categorias = crud.listar_categorias_eliminadas(session)
+    return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]

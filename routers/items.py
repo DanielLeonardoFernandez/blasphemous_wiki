@@ -87,8 +87,7 @@ from schemas import ItemReadFull
 
 @router.get("/{item_id}/detalles", response_model=ItemReadFull)
 def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)):
-    item = crud.get_item(session, item_id)
+    item = crud.get_item_detallado(session, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
-    # al tener relaciones cargadas, FastAPI devolverá toda la estructura completa
     return item

@@ -323,3 +323,4 @@ def get_item_detallado(session: Session, item_id: int):
             for i in item.interacciones
         ]
     }
+

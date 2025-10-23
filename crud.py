@@ -282,7 +282,11 @@ def buscar_items(
 
     return results
 
-def get_item_detallado(session: Session, item_id: int) -> Item | None:
+from sqlalchemy.orm import selectinload
+from sqlmodel import select
+from models import Item
+
+def get_item_detallado(session: Session, item_id: int):
     stmt = (
         select(Item)
         .where(Item.id == item_id)
@@ -292,4 +296,30 @@ def get_item_detallado(session: Session, item_id: int) -> Item | None:
             selectinload(Item.interacciones)
         )
     )
-    return session.exec(stmt).first()
+
+    item = session.exec(stmt).first()
+    if not item:
+        return None
+
+    # ✅ Convertir a formato compatible con ItemReadFull
+    return {
+        "id": item.id,
+        "nombre": item.nombre,
+        "descripcion": item.descripcion,
+        "costo": item.costo,
+        "indispensable": item.indispensable,
+        "categoria_id": item.categoria_id,
+        "categoria": {
+            "id": item.categoria.id if item.categoria else None,
+            "nombre": item.categoria.nombre if item.categoria else None,
+            "descripcion": item.categoria.descripcion if item.categoria else None
+        } if item.categoria else None,
+        "ubicaciones": [
+            {"id": u.id, "nombre": u.nombre, "tipo": u.tipo, "descripcion": u.descripcion}
+            for u in item.ubicaciones
+        ],
+        "interacciones": [
+            {"id": i.id, "descripcion": i.descripcion}
+            for i in item.interacciones
+        ]
+    }

@@ -145,17 +145,31 @@ def crear_item(session: Session, data: ItemCreate) -> Item:
     return item
 
 def listar_items(session: Session):
-    return session.exec(
-        select(Item)
-        .options(
+    items = session.exec(
+        select(Item).options(
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
     ).all()
 
+    # ✅ Convertir relaciones a listas de IDs
+    result = []
+    for it in items:
+        result.append({
+            "id": it.id,
+            "nombre": it.nombre,
+            "descripcion": it.descripcion,
+            "costo": it.costo,
+            "indispensable": it.indispensable,
+            "categoria_id": it.categoria_id,
+            "ubicacion_ids": [u.id for u in it.ubicaciones],
+            "interaccion_ids": [i.id for i in it.interacciones]
+        })
+    return result
 
-def get_item(session: Session, item_id: int) -> Item | None:
-    return session.exec(
+
+def get_item(session: Session, item_id: int):
+    item = session.exec(
         select(Item)
         .where(Item.id == item_id)
         .options(
@@ -163,6 +177,20 @@ def get_item(session: Session, item_id: int) -> Item | None:
             selectinload(Item.interacciones)
         )
     ).first()
+
+    if not item:
+        return None
+
+    return {
+        "id": item.id,
+        "nombre": item.nombre,
+        "descripcion": item.descripcion,
+        "costo": item.costo,
+        "indispensable": item.indispensable,
+        "categoria_id": item.categoria_id,
+        "ubicacion_ids": [u.id for u in item.ubicaciones],
+        "interaccion_ids": [i.id for i in item.interacciones]
+    }
 
 
 
@@ -212,12 +240,14 @@ def buscar_items(
     ubicacion_id: Optional[int] = None,
     indispensable: Optional[bool] = None,
     nombre: Optional[str] = None
-) -> List[Item]:
+) -> List[dict]:
+    # Cargar relaciones many-to-many eficientemente
     query = select(Item).options(
         selectinload(Item.ubicaciones),
         selectinload(Item.interacciones)
     )
 
+    # Filtros básicos
     if categoria_id is not None:
         query = query.where(Item.categoria_id == categoria_id)
 
@@ -225,14 +255,32 @@ def buscar_items(
         query = query.where(Item.indispensable == indispensable)
 
     if nombre is not None:
-        query = query.where(func.lower(Item.nombre).contains(nombre.lower()))
+        query = query.where(Item.nombre.ilike(f"%{nombre}%"))
 
     items = session.exec(query).all()
 
+    # Filtro por ubicación (más claro y directo)
     if ubicacion_id is not None:
-        items = [it for it in items if any(u.id == ubicacion_id for u in it.ubicaciones)]
+        items = [
+            it for it in items
+            if any(u.id == ubicacion_id for u in it.ubicaciones)
+        ]
 
-    return items
+    # Convertir los resultados en un formato amigable para FastAPI
+    results = []
+    for it in items:
+        results.append({
+            "id": it.id,
+            "nombre": it.nombre,
+            "descripcion": it.descripcion,
+            "costo": it.costo,
+            "indispensable": it.indispensable,
+            "categoria_id": it.categoria_id,
+            "ubicacion_ids": [u.id for u in it.ubicaciones],
+            "interaccion_ids": [i.id for i in it.interacciones],
+        })
+
+    return results
 
 def get_item_detallado(session: Session, item_id: int) -> Item | None:
     stmt = (

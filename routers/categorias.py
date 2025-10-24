@@ -19,6 +19,12 @@ def list_categorias(session: Session = Depends(get_session)):
     categorias = crud.list_categorias(session)
     return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]
 
+# Listar categorías eliminadas (soft delete)
+@router.get("/eliminadas", response_model=list[CategoriaRead])
+def listar_categorias_eliminadas(session: Session = Depends(get_session)):
+    categorias = crud.listar_categorias_eliminadas(session)
+    return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]
+
 
 # Obtener una categoría por ID
 @router.get("/{categoria_id}", response_model=CategoriaRead)
@@ -54,8 +60,3 @@ def restaurar_categoria(categoria_id: int, session: Session = Depends(get_sessio
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
     return {"ok": True, "mensaje": "Categoría restaurada correctamente"}
 
-# Listar categorías eliminadas (soft delete)
-@router.get("/eliminadas", response_model=list[CategoriaRead])
-def listar_categorias_eliminadas(session: Session = Depends(get_session)):
-    categorias = crud.listar_categorias_eliminadas(session)
-    return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]

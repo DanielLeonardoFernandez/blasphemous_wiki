@@ -1,12 +1,11 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlmodel import Session
 from db import get_session
-from schemas import ItemCreate, ItemRead, ItemUpdate
+from schemas import ItemCreate, ItemRead, ItemUpdate, ItemReadFull
 import crud
 from typing import Optional, List
 
 router = APIRouter(prefix="/items", tags=["Items"])
-
 
 # ---------------------------
 # CREATE
@@ -16,7 +15,7 @@ def crear_item(item_in: ItemCreate, session: Session = Depends(get_session)):
     item = crud.crear_item(session, item_in)
     if not item:
         raise HTTPException(status_code=400, detail="Error al crear el ítem")
-    return item  # FastAPI usará orm_mode para convertirlo automáticamente
+    return item
 
 
 # ---------------------------
@@ -24,14 +23,17 @@ def crear_item(item_in: ItemCreate, session: Session = Depends(get_session)):
 # ---------------------------
 @router.get("/", response_model=List[ItemRead])
 def listar_items(session: Session = Depends(get_session)):
-    items = crud.listar_items(session)
-    return items
+    return crud.listar_items(session)
 
-# Listar ítems eliminados (soft delete)
-@router.get("/eliminados", response_model=list[ItemRead])
+
+# ---------------------------
+# READ ALL (ELIMINADOS)
+# 🔹 Debe ir antes de cualquier ruta con {item_id}
+# ---------------------------
+@router.get("/estado/eliminados", response_model=List[ItemRead])
 def listar_items_eliminados(session: Session = Depends(get_session)):
-    items = crud.listar_items_eliminados(session)
-    return items
+    return crud.listar_items_eliminados(session)
+
 
 # ---------------------------
 # SEARCH / FILTER
@@ -44,14 +46,36 @@ def buscar_items(
     nombre: Optional[str] = Query(default=None),
     session: Session = Depends(get_session)
 ):
-    items = crud.buscar_items(
+    return crud.buscar_items(
         session,
         categoria_id=categoria_id,
         ubicacion_id=ubicacion_id,
         indispensable=indispensable,
         nombre=nombre,
     )
-    return items
+
+
+# ---------------------------
+# READ ONE (DETALLADO)
+# 🔹 Importante: antes de /{item_id}
+# ---------------------------
+@router.get("/{item_id}/detalles", response_model=ItemReadFull)
+def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)):
+    item = crud.get_item_detallado(session, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+    return item
+
+
+# ---------------------------
+# RESTAURAR (activar ítem eliminado)
+# ---------------------------
+@router.put("/{item_id}/restaurar")
+def restaurar_item(item_id: int, session: Session = Depends(get_session)):
+    ok = crud.restaurar_item(session, item_id)
+    if not ok:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+    return {"ok": True, "mensaje": "Ítem restaurado correctamente"}
 
 
 # ---------------------------
@@ -77,33 +101,11 @@ def actualizar_item(item_id: int, data: ItemUpdate, session: Session = Depends(g
 
 
 # ---------------------------
-# DELETE
+# DELETE (soft delete)
 # ---------------------------
 @router.delete("/{item_id}")
 def borrar_item(item_id: int, session: Session = Depends(get_session)):
     ok = crud.delete_item(session, item_id)
     if not ok:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
-    return {"ok": True}
-
-# ---------------------------
-# READ ONE (DETALLADO)
-# ---------------------------
-from schemas import ItemReadFull
-
-@router.get("/{item_id}/detalles", response_model=ItemReadFull)
-def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)):
-    item = crud.get_item_detallado(session, item_id)
-    if not item:
-        raise HTTPException(status_code=404, detail="Ítem no encontrado")
-    return item
-# ---------------------------
-# RESTAURAR (activar ítem eliminado)
-# ---------------------------
-@router.put("/{item_id}/restaurar")
-def restaurar_item(item_id: int, session: Session = Depends(get_session)):
-    ok = crud.restaurar_item(session, item_id)
-    if not ok:
-        raise HTTPException(status_code=404, detail="Ítem no encontrado")
-    return {"ok": True, "mensaje": "Ítem restaurado correctamente"}
-
+    return {"ok": True, "mensaje": "Ítem marcado como inactivo"}

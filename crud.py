@@ -2,8 +2,6 @@ from sqlmodel import Session, select
 from models import Item, Categoria, Ubicacion, Interaccion, ItemLocationLink, ItemInteraccionLink
 from schemas import ItemCreate, ItemUpdate
 from typing import List, Optional
-from sqlalchemy.orm import selectinload
-from sqlalchemy import func
 
 
 def create_categoria(session: Session, nombre: str, descripcion: str | None = None) -> Categoria:

@@ -1,6 +1,6 @@
 from fastapi import FastAPI
 from db import create_tables
-from routers import items, categorias, ubicaciones, interacciones
+from routers import items, categorias, ubicaciones, interacciones, imagenes
 
 app = FastAPI(lifespan=create_tables, title="Blasphemous Wiki API")
 
@@ -8,6 +8,7 @@ app.include_router(items.router)
 app.include_router(categorias.router)
 app.include_router(ubicaciones.router)
 app.include_router(interacciones.router)
+app.include_router(imagenes.router)
 
 @app.get("/")
 async def root():

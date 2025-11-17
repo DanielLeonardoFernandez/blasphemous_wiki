@@ -2,8 +2,7 @@ from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
 import datetime
 
-# --- Bucket URL ---
-
+# --- Bucket URL / Imagen Historica ---
 class Imagen(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     url: str
@@ -24,10 +23,12 @@ class Categoria(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
     descripcion: Optional[str] = None
-    activo: bool = Field(default=True)  # ✅ agregado
+    activo: bool = Field(default=True)
+
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
 
     items: List["Item"] = Relationship(back_populates="categoria")
-
 
 
 class Item(SQLModel, table=True):
@@ -37,12 +38,21 @@ class Item(SQLModel, table=True):
     costo: Optional[int] = None
     indispensable: bool = False
     categoria_id: Optional[int] = Field(default=None, foreign_key="categoria.id")
-    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
+    activo: bool = Field(default=True)
+
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
 
     categoria: Optional[Categoria] = Relationship(back_populates="items")
 
-    ubicaciones: List["Ubicacion"] = Relationship(back_populates="items", link_model=ItemLocationLink)
-    interacciones: List["Interaccion"] = Relationship(back_populates="items", link_model=ItemInteraccionLink)
+    ubicaciones: List["Ubicacion"] = Relationship(
+        back_populates="items",
+        link_model=ItemLocationLink
+    )
+    interacciones: List["Interaccion"] = Relationship(
+        back_populates="items",
+        link_model=ItemInteraccionLink
+    )
 
 
 class Ubicacion(SQLModel, table=True):
@@ -50,13 +60,27 @@ class Ubicacion(SQLModel, table=True):
     nombre: str
     tipo: Optional[str] = None
     descripcion: Optional[str] = None
-    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
+    activo: bool = Field(default=True)
 
-    items: List[Item] = Relationship(back_populates="ubicaciones", link_model=ItemLocationLink)
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
+
+    items: List[Item] = Relationship(
+        back_populates="ubicaciones",
+        link_model=ItemLocationLink
+    )
+
 
 class Interaccion(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     descripcion: str
-    activo: bool = Field(default=True)  # ✅ nuevo campo lógico
+    activo: bool = Field(default=True)
 
-    items: List[Item] = Relationship(back_populates="interacciones", link_model=ItemInteraccionLink)
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
+
+    items: List[Item] = Relationship(
+        back_populates="interacciones",
+        link_model=ItemInteraccionLink
+    )
+

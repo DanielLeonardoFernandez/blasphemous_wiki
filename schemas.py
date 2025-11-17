@@ -7,6 +7,7 @@ from typing import Optional, List
 class CategoriaBase(SQLModel):
     nombre: str
     descripcion: Optional[str] = None
+    imagen_url: Optional[str] = None  # ← agregado
 
 class CategoriaCreate(CategoriaBase):
     pass
@@ -17,6 +18,7 @@ class CategoriaRead(CategoriaBase):
 class CategoriaUpdate(SQLModel):
     nombre: Optional[str] = None
     descripcion: Optional[str] = None
+    imagen_url: Optional[str] = None  # ← agregado
 
 
 # ==============================
@@ -26,6 +28,7 @@ class UbicacionBase(SQLModel):
     nombre: str
     tipo: Optional[str] = None
     descripcion: Optional[str] = None
+    imagen_url: Optional[str] = None  # ← agregado
 
 class UbicacionCreate(UbicacionBase):
     pass
@@ -37,18 +40,18 @@ class UbicacionRead(UbicacionBase):
 # ==============================
 # 🔁 INTERACCIONES
 # ==============================
-
 class InteraccionCreate(SQLModel):
     descripcion: str
-
+    imagen_url: Optional[str] = None  # ← agregado
 
 class InteraccionRead(SQLModel):
     id: int
     descripcion: str
-
+    imagen_url: Optional[str] = None  # ← agregado
 
 class InteraccionUpdate(SQLModel):
     descripcion: Optional[str] = None
+    imagen_url: Optional[str] = None  # ← agregado
 
 
 # ==============================
@@ -60,6 +63,7 @@ class ItemBase(SQLModel):
     costo: Optional[int] = None
     indispensable: bool = False
     categoria_id: Optional[int] = None
+    imagen_url: Optional[str] = None  # ← agregado
 
 class ItemCreate(ItemBase):
     ubicacion_ids: List[int] = Field(default_factory=list)
@@ -76,8 +80,10 @@ class ItemUpdate(SQLModel):
     costo: Optional[int] = None
     indispensable: Optional[bool] = None
     categoria_id: Optional[int] = None
+    imagen_url: Optional[str] = None  # ← agregado
     ubicacion_ids: Optional[List[int]] = None
     interaccion_ids: Optional[List[int]] = None
+
 
 # ==============================
 # 🧭 ITEM DETALLADO (RELACIONES COMPLETAS)
@@ -93,5 +99,5 @@ class ItemReadFull(ItemBase):
     interacciones: List["InteraccionRead"] = []
 
     model_config = {
-        "from_attributes": True  # equivale a orm_mode=True
+        "from_attributes": True
     }

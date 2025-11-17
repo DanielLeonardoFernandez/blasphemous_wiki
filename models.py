@@ -1,5 +1,13 @@
 from sqlmodel import SQLModel, Field, Relationship
 from typing import List, Optional
+import datetime
+
+# --- Bucket URL ---
+
+class Imagen(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    url: str
+    fecha_subida: datetime.datetime = Field(default_factory=datetime.datetime.utcnow)
 
 # --- Link tables ---
 class ItemLocationLink(SQLModel, table=True):

@@ -1,8 +1,9 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlmodel import Session
 from db import get_session
 from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 import crud
+from supa.supabase import upload_to_bucket
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
 
@@ -10,9 +11,26 @@ router = APIRouter(prefix="/categorias", tags=["Categorías"])
 # CREAR
 # ---------------------------
 @router.post("/", response_model=CategoriaRead)
-def create_categoria(data: CategoriaCreate, session: Session = Depends(get_session)):
-    cat = crud.create_categoria(session, data.nombre, data.descripcion)
-    return CategoriaRead(id=cat.id, nombre=cat.nombre, descripcion=cat.descripcion)
+async def create_categoria(
+    nombre: str = Form(...),
+    descripcion: str = Form(None),
+    imagen: UploadFile = File(None),
+    session: Session = Depends(get_session)
+):
+    imagen_url = None
+
+    # Subir imagen si viene
+    if imagen:
+        imagen_url = await upload_to_bucket(imagen)
+
+    cat = crud.create_categoria(session, nombre, descripcion, imagen_url)
+
+    return CategoriaRead(
+        id=cat.id,
+        nombre=cat.nombre,
+        descripcion=cat.descripcion,
+        imagen_url=cat.imagen_url
+    )
 
 # ---------------------------
 # LISTAR TODAS
@@ -20,35 +38,80 @@ def create_categoria(data: CategoriaCreate, session: Session = Depends(get_sessi
 @router.get("/", response_model=list[CategoriaRead])
 def list_categorias(session: Session = Depends(get_session)):
     categorias = crud.list_categorias(session)
-    return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]
+    return [
+        CategoriaRead(
+            id=c.id,
+            nombre=c.nombre,
+            descripcion=c.descripcion,
+            imagen_url=c.imagen_url
+        )
+        for c in categorias
+    ]
 
 # ---------------------------
-# LISTAR ELIMINADAS (SOFT DELETE)
+# LISTAR ELIMINADAS
 # ---------------------------
 @router.get("/eliminadas", response_model=list[CategoriaRead])
 def listar_categorias_eliminadas(session: Session = Depends(get_session)):
     categorias = crud.listar_categorias_eliminadas(session)
-    return [CategoriaRead(id=c.id, nombre=c.nombre, descripcion=c.descripcion) for c in categorias]
+    return [
+        CategoriaRead(
+            id=c.id,
+            nombre=c.nombre,
+            descripcion=c.descripcion,
+            imagen_url=c.imagen_url
+        )
+        for c in categorias
+    ]
 
 # ---------------------------
-# OBTENER UNA POR ID
+# OBTENER POR ID
 # ---------------------------
 @router.get("/id/{categoria_id}", response_model=CategoriaRead)
 def get_categoria(categoria_id: int, session: Session = Depends(get_session)):
     categoria = crud.get_categoria(session, categoria_id)
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return CategoriaRead(id=categoria.id, nombre=categoria.nombre, descripcion=categoria.descripcion)
+    return CategoriaRead(
+        id=categoria.id,
+        nombre=categoria.nombre,
+        descripcion=categoria.descripcion,
+        imagen_url=categoria.imagen_url
+    )
 
 # ---------------------------
 # ACTUALIZAR
 # ---------------------------
 @router.put("/{categoria_id}", response_model=CategoriaRead)
-def update_categoria(categoria_id: int, data: CategoriaUpdate, session: Session = Depends(get_session)):
-    categoria = crud.update_categoria(session, categoria_id, data.nombre, data.descripcion)
+async def update_categoria(
+    categoria_id: int,
+    nombre: str = Form(None),
+    descripcion: str = Form(None),
+    imagen: UploadFile = File(None),
+    session: Session = Depends(get_session)
+):
+    imagen_url = None
+
+    if imagen:
+        imagen_url = await upload_to_bucket(imagen)
+
+    categoria = crud.update_categoria(
+        session,
+        categoria_id,
+        nombre,
+        descripcion,
+        imagen_url
+    )
+
     if not categoria:
         raise HTTPException(status_code=404, detail="Categoría no encontrada")
-    return CategoriaRead(id=categoria.id, nombre=categoria.nombre, descripcion=categoria.descripcion)
+
+    return CategoriaRead(
+        id=categoria.id,
+        nombre=categoria.nombre,
+        descripcion=categoria.descripcion,
+        imagen_url=categoria.imagen_url
+    )
 
 # ---------------------------
 # ELIMINAR (SOFT DELETE)

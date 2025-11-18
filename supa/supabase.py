@@ -2,6 +2,12 @@ import os
 from typing import Optional
 from fastapi import UploadFile
 from supabase import create_client, Client
+from dotenv import load_dotenv
+import re
+import unicodedata
+import uuid
+
+load_dotenv()
 
 # Cargar credenciales desde variables de entorno
 SUPABASE_URL = os.getenv("SUPABASE_URL")
@@ -26,17 +32,34 @@ def get_supabase_client():
 
     return _supabase_client
 
+def sanitize_filename(filename: str) -> str:
+    # Normalizar para quitar acentos
+    filename = unicodedata.normalize("NFKD", filename).encode("ascii", "ignore").decode()
+
+    # Reemplazar cualquier caracter no permitido por _
+    filename = re.sub(r"[^a-zA-Z0-9._-]", "_", filename)
+
+    return filename
 
 async def upload_to_bucket(file: UploadFile):
     """
     Sube un archivo al bucket y devuelve la URL pública.
-    Mismo flujo que tu ejemplo, adaptado a tu proyecto.
+    Genera un nombre único para evitar errores 409 (Duplicate).
     """
     client = get_supabase_client()
 
     try:
         file_content = await file.read()
-        file_path = f"public/{file.filename}"
+
+        # Extraer extensión del archivo
+        ext = file.filename.split(".")[-1].lower()
+
+        # Nombre seguro + UUID
+        safe_name = sanitize_filename(file.filename.rsplit(".", 1)[0])
+        unique_name = f"{safe_name}_{uuid.uuid4()}.{ext}"
+
+        # Ruta final en supabase
+        file_path = f"public/{unique_name}"
 
         client.storage.from_(SUPABASE_BUCKET).upload(
             path=file_path,
@@ -46,7 +69,7 @@ async def upload_to_bucket(file: UploadFile):
             }
         )
 
-        # Igual que tu ejemplo: obtener URL pública
+        # URL pública
         public_url = client.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
         return public_url
 

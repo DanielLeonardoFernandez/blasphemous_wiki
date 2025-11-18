@@ -4,12 +4,22 @@ from schemas import ItemCreate, ItemUpdate
 from typing import List, Optional
 
 
-def create_categoria(session: Session, nombre: str, descripcion: str | None = None) -> Categoria:
-    cat = Categoria(nombre=nombre, descripcion=descripcion)
+def create_categoria(
+    session: Session,
+    nombre: str,
+    descripcion: str | None = None,
+    imagen_url: str | None = None
+) -> Categoria:
+    cat = Categoria(
+        nombre=nombre,
+        descripcion=descripcion,
+        imagen_url=imagen_url
+    )
     session.add(cat)
     session.commit()
     session.refresh(cat)
     return cat
+
 
 
 def list_categorias(session: Session):

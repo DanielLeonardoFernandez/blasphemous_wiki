@@ -1,5 +1,5 @@
 from fastapi import APIRouter, UploadFile, File, HTTPException
-from storage.supabase import upload_to_bucket
+from supa.supabase import upload_to_bucket
 
 router = APIRouter(prefix="/imagenes", tags=["Imágenes"])
 

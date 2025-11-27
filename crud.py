@@ -44,23 +44,28 @@ def update_categoria(
 ) -> Categoria | None:
 
     categoria = session.get(Categoria, categoria_id)
-
-    # ❌ No existe o está eliminada
     if not categoria or not categoria.activo:
         return None
 
-    # 🔄 Actualizaciones parciales
     if nombre is not None:
         categoria.nombre = nombre
+
     if descripcion is not None:
         categoria.descripcion = descripcion
-    if imagen_url is not None:
+
+    # ✔ Caso especial para multipart/form-data:
+    #    imagen_url == "" → borrar imagen
+    #    imagen_url == None → no tocar la imagen
+    if imagen_url == "":
+        categoria.imagen_url = None
+    elif imagen_url is not None:
         categoria.imagen_url = imagen_url
 
     session.add(categoria)
     session.commit()
     session.refresh(categoria)
     return categoria
+
 
 
 def delete_categoria(session: Session, categoria_id: int) -> bool:

@@ -35,15 +35,27 @@ def get_categoria(session: Session, categoria_id: int) -> Categoria | None:
     ).first()
 
 
-def update_categoria(session: Session, categoria_id: int, nombre: str | None, descripcion: str | None) -> Categoria | None:
+def update_categoria(
+    session: Session,
+    categoria_id: int,
+    nombre: str | None = None,
+    descripcion: str | None = None,
+    imagen_url: str | None = None
+) -> Categoria | None:
+
     categoria = session.get(Categoria, categoria_id)
+
+    # ❌ No existe o está eliminada
     if not categoria or not categoria.activo:
         return None
 
+    # 🔄 Actualizaciones parciales
     if nombre is not None:
         categoria.nombre = nombre
     if descripcion is not None:
         categoria.descripcion = descripcion
+    if imagen_url is not None:
+        categoria.imagen_url = imagen_url
 
     session.add(categoria)
     session.commit()

@@ -88,20 +88,24 @@ async def update_categoria(
     categoria_id: int,
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
-    imagen: Optional[UploadFile] = File(None),  # ← cambio importante
+    imagen: Optional[UploadFile] = File(None),
     session: Session = Depends(get_session)
 ):
-    imagen_url = None
 
-    if imagen is not None and imagen.filename != "":
+    # 1. Procesar imagen solo si realmente viene una imagen válida
+    imagen_url = None
+    if imagen is not None and imagen.filename not in (None, "", "null"):
+        # Solo se sube si realmente enviaron archivo
         imagen_url = await upload_to_bucket(imagen)
 
+    # 2. Pasar valores crudos al CRUD,
+    #    incluidos "", None o strings normales.
     categoria = crud.update_categoria(
-        session,
-        categoria_id,
-        nombre,
-        descripcion,
-        imagen_url
+        session=session,
+        categoria_id=categoria_id,
+        nombre=nombre,               # Puede ser None (no se envió) o "" (vaciar)
+        descripcion=descripcion,     # Igual que arriba
+        imagen_url=imagen_url        # None = no tocar, URL = actualizar
     )
 
     if not categoria:
@@ -113,6 +117,7 @@ async def update_categoria(
         descripcion=categoria.descripcion,
         imagen_url=categoria.imagen_url
     )
+
 
 # ---------------------------
 # ELIMINAR (SOFT DELETE)

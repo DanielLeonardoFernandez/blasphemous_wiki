@@ -86,9 +86,9 @@ def get_categoria(categoria_id: int, session: Session = Depends(get_session)):
 @router.put("/{categoria_id}", response_model=CategoriaRead)
 async def update_categoria(
     categoria_id: int,
-    nombre: str = Form(None),
-    descripcion: str = Form(None),
-    imagen: Optional[UploadFile] = File(None),   # ← cambio importante
+    nombre: Optional[str] = Form(None),
+    descripcion: Optional[str] = Form(None),
+    imagen: Optional[UploadFile] = File(None),  # ← cambio importante
     session: Session = Depends(get_session)
 ):
     imagen_url = None

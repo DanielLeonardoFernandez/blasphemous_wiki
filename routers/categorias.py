@@ -93,7 +93,7 @@ async def update_categoria(
 ):
     imagen_url = None
 
-    if imagen:
+    if imagen is not None and imagen.filename != "":
         imagen_url = await upload_to_bucket(imagen)
 
     categoria = crud.update_categoria(

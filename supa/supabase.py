@@ -7,7 +7,8 @@ import re
 import unicodedata
 import uuid
 
-load_dotenv()
+if os.getenv("RENDER") is None:
+    load_dotenv()
 
 # Cargar credenciales desde variables de entorno
 SUPABASE_URL = os.getenv("SUPABASE_URL")

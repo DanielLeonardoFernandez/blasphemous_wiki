@@ -4,6 +4,7 @@ from db import get_session
 from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 import crud
 from supa.supabase import upload_to_bucket
+from typing import Optional
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
 
@@ -87,7 +88,7 @@ async def update_categoria(
     categoria_id: int,
     nombre: str = Form(None),
     descripcion: str = Form(None),
-    imagen: UploadFile = File(None),
+    imagen: Optional[UploadFile] = File(None),   # ← cambio importante
     session: Session = Depends(get_session)
 ):
     imagen_url = None

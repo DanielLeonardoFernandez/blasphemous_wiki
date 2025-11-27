@@ -88,24 +88,42 @@ async def update_categoria(
     categoria_id: int,
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
-    imagen: Optional[UploadFile] = File(None),
+    imagen: Any = File(None),  # ← aceptar cualquier cosa (UploadFile | str | None)
     session: Session = Depends(get_session)
 ):
-
-    # 1. Procesar imagen solo si realmente viene una imagen válida
     imagen_url = None
-    if imagen is not None and imagen.filename not in (None, "", "null"):
-        # Solo se sube si realmente enviaron archivo
-        imagen_url = await upload_to_bucket(imagen)
 
-    # 2. Pasar valores crudos al CRUD,
-    #    incluidos "", None o strings normales.
+    # Caso: no se envió el campo
+    if imagen is None:
+        imagen_url = None
+
+    # Caso: el cliente envía un string (ej: Insomnia con "send empty value")
+    elif isinstance(imagen, str):
+        # si es cadena vacía -> señal para borrar la imagen
+        if imagen == "":
+            imagen_url = ""   # tu CRUD interpreta "" como borrar
+        else:
+            # si por alguna razón el cliente manda un string con URL, lo usamos
+            imagen_url = imagen
+
+    # Caso: vino un UploadFile (cliente envía realmente un archivo)
+    elif isinstance(imagen, UploadFile):
+        # filename vacío -> borrar
+        if imagen.filename == "":
+            imagen_url = ""
+        else:
+            imagen_url = await upload_to_bucket(imagen)
+
+    else:
+        # caso raro: fallback seguro
+        imagen_url = None
+
     categoria = crud.update_categoria(
         session=session,
         categoria_id=categoria_id,
-        nombre=nombre,               # Puede ser None (no se envió) o "" (vaciar)
-        descripcion=descripcion,     # Igual que arriba
-        imagen_url=imagen_url        # None = no tocar, URL = actualizar
+        nombre=nombre,
+        descripcion=descripcion,
+        imagen_url=imagen_url
     )
 
     if not categoria:

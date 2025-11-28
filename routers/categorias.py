@@ -4,7 +4,7 @@ from db import get_session
 from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 import crud
 from supa.supabase import upload_to_bucket
-from typing import Optional, Any
+from typing import Optional
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
 
@@ -88,42 +88,33 @@ async def update_categoria(
     categoria_id: int,
     nombre: Optional[str] = Form(None),
     descripcion: Optional[str] = Form(None),
-    imagen: Any = File(None),  # ← aceptar cualquier cosa (UploadFile | str | None)
+    imagen: UploadFile | None = File(None),  # ← mantiene input FILE normal
     session: Session = Depends(get_session)
 ):
+
     imagen_url = None
 
-    # Caso: no se envió el campo
-    if imagen is None:
-        imagen_url = None
-
-    # Caso: el cliente envía un string (ej: Insomnia con "send empty value")
-    elif isinstance(imagen, str):
-        # si es cadena vacía -> señal para borrar la imagen
-        if imagen == "":
-            imagen_url = ""   # tu CRUD interpreta "" como borrar
-        else:
-            # si por alguna razón el cliente manda un string con URL, lo usamos
-            imagen_url = imagen
-
-    # Caso: vino un UploadFile (cliente envía realmente un archivo)
-    elif isinstance(imagen, UploadFile):
-        # filename vacío -> borrar
+    if imagen is not None:
+        # Caso 1: campo enviado vacío (send empty value)
         if imagen.filename == "":
             imagen_url = ""
-        else:
+
+        # Caso 2: el usuario sí sube archivo normal
+        elif imagen.file:
             imagen_url = await upload_to_bucket(imagen)
 
-    else:
-        # caso raro: fallback seguro
-        imagen_url = None
+        # Caso 3: algo raro
+        else:
+            imagen_url = None
+
+    # Si imagen == None → NO tocar imagen en BD
 
     categoria = crud.update_categoria(
-        session=session,
-        categoria_id=categoria_id,
-        nombre=nombre,
-        descripcion=descripcion,
-        imagen_url=imagen_url
+        session,
+        categoria_id,
+        nombre,
+        descripcion,
+        imagen_url
     )
 
     if not categoria:

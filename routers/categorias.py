@@ -4,7 +4,7 @@ from db import get_session
 from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 import crud
 from supa.supabase import upload_to_bucket
-from typing import Optional
+from typing import Optional, Any
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
 

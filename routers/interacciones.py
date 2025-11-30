@@ -1,8 +1,10 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlmodel import Session
 from db import get_session
 from schemas import InteraccionCreate, InteraccionRead, InteraccionUpdate
 import crud
+from supa.supabase import upload_to_bucket
+from os import getenv
 
 router = APIRouter(prefix="/interacciones", tags=["Interacciones"])
 
@@ -10,9 +12,29 @@ router = APIRouter(prefix="/interacciones", tags=["Interacciones"])
 # CREAR
 # ---------------------------
 @router.post("/", response_model=InteraccionRead)
-def create_interaccion(data: InteraccionCreate, session: Session = Depends(get_session)):
-    i = crud.create_interaccion(session, data.descripcion)
-    return InteraccionRead(id=i.id, descripcion=i.descripcion)
+async def create_interaccion(
+    descripcion: str = Form(...),
+    imagen: UploadFile | None = File(None),
+    session: Session = Depends(get_session)
+):
+    imagen_url = None
+
+    # ✔ Si viene imagen → subir al bucket
+    if imagen:
+        imagen_url = await upload_to_bucket(imagen, bucket=getenv("BUCKET_INTERACCIONES"))
+
+    i = crud.create_interaccion(
+        session=session,
+        descripcion=descripcion,
+        imagen_url=imagen_url
+    )
+
+    return InteraccionRead(
+        id=i.id,
+        descripcion=i.descripcion,
+        imagen_url=i.imagen_url
+    )
+
 
 # ---------------------------
 # LISTAR TODAS
@@ -20,7 +42,7 @@ def create_interaccion(data: InteraccionCreate, session: Session = Depends(get_s
 @router.get("/", response_model=list[InteraccionRead])
 def list_interacciones(session: Session = Depends(get_session)):
     interacciones = crud.list_interacciones(session)
-    return [InteraccionRead(id=i.id, descripcion=i.descripcion) for i in interacciones]
+    return [InteraccionRead(id=i.id, descripcion=i.descripcion, imagen_url=i.imagen_url) for i in interacciones]
 
 # ---------------------------
 # LISTAR ELIMINADAS (SOFT DELETE)
@@ -28,7 +50,7 @@ def list_interacciones(session: Session = Depends(get_session)):
 @router.get("/eliminadas", response_model=list[InteraccionRead])
 def listar_interacciones_eliminadas(session: Session = Depends(get_session)):
     interacciones = crud.listar_interacciones_eliminadas(session)
-    return [InteraccionRead(id=i.id, descripcion=i.descripcion) for i in interacciones]
+    return [InteraccionRead(id=i.id, descripcion=i.descripcion, imagen_url=i.imagen_url) for i in interacciones]
 
 # ---------------------------
 # OBTENER POR ID
@@ -38,17 +60,43 @@ def get_interaccion(interaccion_id: int, session: Session = Depends(get_session)
     i = crud.get_interaccion(session, interaccion_id)
     if not i:
         raise HTTPException(status_code=404, detail="Interacción no encontrada")
-    return InteraccionRead(id=i.id, descripcion=i.descripcion)
+    return InteraccionRead(id=i.id, descripcion=i.descripcion, imagen_url=i.imagen_url)
 
 # ---------------------------
 # ACTUALIZAR
 # ---------------------------
 @router.put("/{interaccion_id}", response_model=InteraccionRead)
-def update_interaccion(interaccion_id: int, data: InteraccionUpdate, session: Session = Depends(get_session)):
-    i = crud.update_interaccion(session, interaccion_id, data.descripcion)
+async def update_interaccion(
+    interaccion_id: int,
+    descripcion: str = Form(None),
+    imagen: UploadFile | None = File(None),
+    session: Session = Depends(get_session)
+):
+    imagen_url = None
+
+    if imagen is not None:
+        if imagen.filename == "":
+            # ✔ Borrar imagen
+            imagen_url = ""
+        else:
+            # ✔ Subir nueva
+            imagen_url = await upload_to_bucket(imagen, bucket=getenv("BUCKET_INTERACCIONES"))
+
+    i = crud.update_interaccion(
+        session=session,
+        interaccion_id=interaccion_id,
+        descripcion=descripcion,
+        imagen_url=imagen_url
+    )
+
     if not i:
         raise HTTPException(status_code=404, detail="Interacción no encontrada")
-    return InteraccionRead(id=i.id, descripcion=i.descripcion)
+
+    return InteraccionRead(
+        id=i.id,
+        descripcion=i.descripcion,
+        imagen_url=i.imagen_url
+    )
 
 # ---------------------------
 # ELIMINAR (SOFT DELETE)

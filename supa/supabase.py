@@ -42,12 +42,19 @@ def sanitize_filename(filename: str) -> str:
 
     return filename
 
-async def upload_to_bucket(file: UploadFile):
+async def upload_to_bucket(file: UploadFile, bucket: str | None = None):
     """
     Sube un archivo al bucket y devuelve la URL pública.
     Genera un nombre único para evitar errores 409 (Duplicate).
+
+    Parámetros:
+    - file: UploadFile de FastAPI
+    - bucket: nombre del bucket en Supabase. Si es None usa SUPABASE_BUCKET (valor por defecto en .env)
     """
     client = get_supabase_client()
+
+    # usar bucket pasado o el por defecto desde .env
+    target_bucket = bucket or SUPABASE_BUCKET
 
     try:
         file_content = await file.read()
@@ -62,7 +69,7 @@ async def upload_to_bucket(file: UploadFile):
         # Ruta final en supabase
         file_path = f"public/{unique_name}"
 
-        client.storage.from_(SUPABASE_BUCKET).upload(
+        client.storage.from_(target_bucket).upload(
             path=file_path,
             file=file_content,
             file_options={
@@ -71,7 +78,7 @@ async def upload_to_bucket(file: UploadFile):
         )
 
         # URL pública
-        public_url = client.storage.from_(SUPABASE_BUCKET).get_public_url(file_path)
+        public_url = client.storage.from_(target_bucket).get_public_url(file_path)
         return public_url
 
     except Exception as e:

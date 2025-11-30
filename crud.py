@@ -95,8 +95,21 @@ def listar_categorias_eliminadas(session: Session):
 
 # --- Ubicaciones
 
-def create_ubicacion(session: Session, nombre: str, tipo: str | None, descripcion: str | None) -> Ubicacion:
-    u = Ubicacion(nombre=nombre, tipo=tipo, descripcion=descripcion)
+def create_ubicacion(
+    session: Session,
+    nombre: str,
+    tipo: str | None,
+    descripcion: str | None,
+    imagen_url: str | None = None,   # <--- agregado
+) -> Ubicacion:
+
+    u = Ubicacion(
+        nombre=nombre,
+        tipo=tipo,
+        descripcion=descripcion,
+        imagen_url=imagen_url          # <--- agregado
+    )
+
     session.add(u)
     session.commit()
     session.refresh(u)
@@ -116,13 +129,36 @@ def get_ubicacion(session: Session, ubicacion_id: int):
     ).first()
 
 
-def update_ubicacion(session: Session, ubicacion_id: int, nombre: str, tipo: str | None, descripcion: str | None):
+def update_ubicacion(
+    session: Session,
+    ubicacion_id: int,
+    nombre: str | None,
+    tipo: str | None,
+    descripcion: str | None,
+    imagen_url: str | None = None   # <--- agregado
+):
     u = session.get(Ubicacion, ubicacion_id)
     if not u or not u.activo:
         return None
-    u.nombre = nombre
-    u.tipo = tipo
-    u.descripcion = descripcion
+
+    if nombre is not None:
+        u.nombre = nombre
+
+    if tipo is not None:
+        u.tipo = tipo
+
+    if descripcion is not None:
+        u.descripcion = descripcion
+
+    # ✔ MISMA LÓGICA DE CATEGORÍAS:
+    # imagen_url == ""  → eliminar imagen
+    # imagen_url == None → no tocar
+    # imagen_url normal → actualizar
+    if imagen_url == "":
+        u.imagen_url = None
+    elif imagen_url is not None:
+        u.imagen_url = imagen_url
+
     session.add(u)
     session.commit()
     session.refresh(u)
@@ -156,13 +192,19 @@ def listar_ubicaciones_eliminadas(session: Session):
 
 # --- Interacciones
 
-def create_interaccion(session: Session, descripcion: str) -> Interaccion:
-    i = Interaccion(descripcion=descripcion)
+def create_interaccion(
+    session: Session,
+    descripcion: str,
+    imagen_url: str | None = None
+) -> Interaccion:
+    i = Interaccion(
+        descripcion=descripcion,
+        imagen_url=imagen_url
+    )
     session.add(i)
     session.commit()
     session.refresh(i)
     return i
-
 
 def list_interacciones(session: Session):
     # ✅ Solo interacciones activas
@@ -177,11 +219,28 @@ def get_interaccion(session: Session, interaccion_id: int):
     ).first()
 
 
-def update_interaccion(session: Session, interaccion_id: int, descripcion: str):
+def update_interaccion(
+    session: Session,
+    interaccion_id: int,
+    descripcion: str | None = None,
+    imagen_url: str | None = None
+) -> Interaccion | None:
+
     i = session.get(Interaccion, interaccion_id)
     if not i or not i.activo:
         return None
-    i.descripcion = descripcion
+
+    if descripcion is not None:
+        i.descripcion = descripcion
+
+    # ✔ MISMA LÓGICA QUE EN CATEGORÍAS:
+    #    imagen_url == "" → borrar imagen
+    #    imagen_url == None → no tocar la imagen
+    if imagen_url == "":
+        i.imagen_url = None
+    elif imagen_url is not None:
+        i.imagen_url = imagen_url
+
     session.add(i)
     session.commit()
     session.refresh(i)
@@ -214,13 +273,14 @@ def listar_interacciones_eliminadas(session: Session):
 
 
 # --- Items
-def crear_item(session: Session, data: ItemCreate) -> Item:
+def crear_item(session: Session, data: ItemCreate, imagen_url: str | None = None) -> Item:
     item = Item(
         nombre=data.nombre,
         descripcion=data.descripcion,
         costo=data.costo,
         indispensable=data.indispensable,
-        categoria_id=data.categoria_id
+        categoria_id=data.categoria_id,
+        imagen_url = imagen_url
     )
     session.add(item)
     session.commit()
@@ -260,6 +320,7 @@ def listar_items(session: Session):
             "costo": it.costo,
             "indispensable": it.indispensable,
             "categoria_id": it.categoria_id,
+            "imagen_url": it.imagen_url,
             "ubicacion_ids": [u.id for u in it.ubicaciones],
             "interaccion_ids": [i.id for i in it.interacciones]
         })
@@ -284,6 +345,7 @@ def get_item(session: Session, item_id: int):
         "costo": item.costo,
         "indispensable": item.indispensable,
         "categoria_id": item.categoria_id,
+        "imagen_url": item.imagen_url,
         "ubicacion_ids": [u.id for u in item.ubicaciones],
         "interaccion_ids": [i.id for i in item.interacciones]
     }
@@ -291,30 +353,70 @@ def get_item(session: Session, item_id: int):
 
 
 
-def update_item(session: Session, item_id: int, data: ItemUpdate) -> Item | None:
+def update_item(
+    session: Session,
+    item_id: int,
+    data: ItemUpdate,
+    imagen_url: str | None = None
+) -> Item | None:
+
     item = session.get(Item, item_id)
     if not item:
         return None
-    # aplicar cambios simples
-    for field, val in data.dict(exclude_unset=True).items():
-        if field in ("ubicacion_ids", "interaccion_ids"):
-            continue
-        setattr(item, field, val)
+
+    # ------------------------
+    # CAMPOS SIMPLES
+    # ------------------------
+
+    if data.nombre is not None:
+        item.nombre = data.nombre
+
+    if data.descripcion is not None:
+        item.descripcion = data.descripcion
+
+    if data.costo is not None:
+        item.costo = data.costo
+
+    if data.indispensable is not None:
+        item.indispensable = data.indispensable
+
+    if data.categoria_id is not None:
+        item.categoria_id = data.categoria_id
+
+    # ------------------------
+    # MANEJO ESPECIAL DE IMAGEN
+    # ------------------------
+
+    # cliente mandó imagen vacía => borrar
+    if imagen_url == "":
+        item.imagen_url = None
+
+    # cliente mandó una imagen nueva
+    elif imagen_url is not None:
+        item.imagen_url = imagen_url
+
     session.add(item)
     session.commit()
     session.refresh(item)
 
-    # si se otorgan listas explícitas, re-asocia
+    # ------------------------
+    # RELACIONES MUCHOS-A-MUCHOS
+    # ------------------------
+
+    # Ubicaciones
     if data.ubicacion_ids is not None:
-        # borrar links existentes
-        session.exec(select(ItemLocationLink).where(ItemLocationLink.item_id == item.id)).all()
+        # Caso 1: [] → borrar todas
         session.query(ItemLocationLink).filter(ItemLocationLink.item_id == item.id).delete()
+
+        # Caso 2: [1,2...] → agregar nuevas
         for uid in data.ubicacion_ids:
             if session.get(Ubicacion, uid):
                 session.add(ItemLocationLink(item_id=item.id, ubicacion_id=uid))
 
+    # Interacciones
     if data.interaccion_ids is not None:
         session.query(ItemInteraccionLink).filter(ItemInteraccionLink.item_id == item.id).delete()
+
         for iid in data.interaccion_ids:
             if session.get(Interaccion, iid):
                 session.add(ItemInteraccionLink(item_id=item.id, interaccion_id=iid))
@@ -322,6 +424,7 @@ def update_item(session: Session, item_id: int, data: ItemUpdate) -> Item | None
     session.commit()
     session.refresh(item)
     return item
+
 
 def delete_item(session: Session, item_id: int) -> bool:
     it = session.get(Item, item_id)
@@ -342,7 +445,19 @@ def restaurar_item(session: Session, item_id: int) -> bool:
     return True
 
 def listar_items_eliminados(session: Session):
-    return session.exec(select(Item).where(Item.activo == False)).all()
+    items = session.exec(select(Item).where(Item.activo == False)).all()
+    return [
+        {
+            "id": it.id,
+            "nombre": it.nombre,
+            "descripcion": it.descripcion,
+            "costo": it.costo,
+            "indispensable": it.indispensable,
+            "categoria_id": it.categoria_id,
+            "imagen_url": it.imagen_url,
+        }
+        for it in items
+    ]
 
 
 def buscar_items(
@@ -387,6 +502,7 @@ def buscar_items(
             "costo": it.costo,
             "indispensable": it.indispensable,
             "categoria_id": it.categoria_id,
+            "imagen_url": it.imagen_url,
             "ubicacion_ids": [u.id for u in it.ubicaciones],
             "interaccion_ids": [i.id for i in it.interacciones],
         })
@@ -420,17 +536,19 @@ def get_item_detallado(session: Session, item_id: int):
         "costo": item.costo,
         "indispensable": item.indispensable,
         "categoria_id": item.categoria_id,
+        "imagen_url": item.imagen_url,
         "categoria": {
             "id": item.categoria.id if item.categoria else None,
             "nombre": item.categoria.nombre if item.categoria else None,
-            "descripcion": item.categoria.descripcion if item.categoria else None
+            "descripcion": item.categoria.descripcion if item.categoria else None,
+            "imagen_url": item.categoria.imagen_url if item.categoria else None
         } if item.categoria else None,
         "ubicaciones": [
-            {"id": u.id, "nombre": u.nombre, "tipo": u.tipo, "descripcion": u.descripcion}
+            {"id": u.id, "nombre": u.nombre, "tipo": u.tipo, "descripcion": u.descripcion, "imagen_url": u.imagen_url }
             for u in item.ubicaciones
         ],
         "interacciones": [
-            {"id": i.id, "descripcion": i.descripcion}
+            {"id": i.id, "descripcion": i.descripcion, "imagen_url": i.imagen_url }
             for i in item.interacciones
         ]
     }

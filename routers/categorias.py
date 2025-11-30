@@ -5,6 +5,8 @@ from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
 import crud
 from supa.supabase import upload_to_bucket
 from typing import Optional
+from os import getenv
+
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
 
@@ -22,7 +24,7 @@ async def create_categoria(
 
     # Subir imagen si viene
     if imagen:
-        imagen_url = await upload_to_bucket(imagen)
+        imagen_url = await upload_to_bucket(imagen, bucket=getenv("SUPABASE_BUCKET"))
 
     cat = crud.create_categoria(session, nombre, descripcion, imagen_url)
 
@@ -101,7 +103,10 @@ async def update_categoria(
 
         # Caso 2: el usuario sí sube archivo normal
         elif imagen.file:
-            imagen_url = await upload_to_bucket(imagen)
+            imagen_url = await upload_to_bucket(
+                imagen,
+                bucket=getenv("SUPABASE_BUCKET")   # ← AQUÍ EL CAMBIO
+            )
 
         # Caso 3: algo raro
         else:

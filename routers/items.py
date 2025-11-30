@@ -1,9 +1,13 @@
-from fastapi import APIRouter, Depends, HTTPException, Query
+from fastapi import APIRouter, Depends, HTTPException, Query, UploadFile, File, Form
 from sqlmodel import Session
 from db import get_session
 from schemas import ItemCreate, ItemRead, ItemUpdate, ItemReadFull
 import crud
 from typing import Optional, List
+from supa.supabase import upload_to_bucket
+from os import getenv
+from pydantic import BaseModel, Field
+
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
@@ -11,10 +15,40 @@ router = APIRouter(prefix="/items", tags=["Items"])
 # CREATE
 # ---------------------------
 @router.post("/", response_model=ItemRead)
-def crear_item(item_in: ItemCreate, session: Session = Depends(get_session)):
-    item = crud.crear_item(session, item_in)
+async def crear_item(
+    nombre: str = Form(...),
+    descripcion: str = Form(None),
+    costo: float | None = Form(None),
+    indispensable: bool = Form(...),
+    categoria_id: int = Form(...),
+    ubicacion_ids: list[int] = Form([]),
+    interaccion_ids: list[int] = Form([]),
+    imagen: UploadFile | None = File(None),
+    session: Session = Depends(get_session)
+):
+
+    imagen_url = None
+
+    # Subir imagen si viene
+    if imagen:
+        imagen_url = await upload_to_bucket(imagen, bucket=getenv("BUCKET_ITEMS"))
+
+    # Crear DTO para crud
+    data = ItemCreate(
+        nombre=nombre,
+        descripcion=descripcion,
+        costo=costo,
+        indispensable=indispensable,
+        categoria_id=categoria_id,
+        ubicacion_ids=ubicacion_ids,
+        interaccion_ids=interaccion_ids
+    )
+
+    item = crud.crear_item(session, data, imagen_url)
+
     if not item:
         raise HTTPException(status_code=400, detail="Error al crear el ítem")
+
     return item
 
 
@@ -93,10 +127,50 @@ def obtener_item(item_id: int, session: Session = Depends(get_session)):
 # UPDATE
 # ---------------------------
 @router.put("/{item_id}", response_model=ItemRead)
-def actualizar_item(item_id: int, data: ItemUpdate, session: Session = Depends(get_session)):
-    item = crud.update_item(session, item_id, data)
+async def actualizar_item(
+    item_id: int,
+    nombre: str = Form(None),
+    descripcion: str = Form(None),
+    costo: float | None = Form(None),
+    indispensable: bool = Form(None),
+    categoria_id: int = Form(None),
+    ubicacion_ids: list[int] | None = Form(None),
+    interaccion_ids: list[int] | None = Form(None),
+    imagen: UploadFile | None = File(None),
+    session: Session = Depends(get_session)
+):
+
+    imagen_url = None
+
+    if imagen is not None:
+        # Caso 1: limpiar imagen
+        if imagen.filename == "":
+            imagen_url = ""
+
+        # Caso 2: se sube imagen nueva
+        elif imagen.file:
+            imagen_url = await upload_to_bucket(imagen, bucket=getenv("BUCKET_ITEMS"))
+
+        # Caso 3: valor extraño
+        else:
+            imagen_url = None
+
+    # Crear DTO de actualización
+    data = ItemUpdate(
+        nombre=nombre,
+        descripcion=descripcion,
+        costo=costo,
+        indispensable=indispensable,
+        categoria_id=categoria_id,
+        ubicacion_ids=ubicacion_ids,
+        interaccion_ids=interaccion_ids
+    )
+
+    item = crud.update_item(session, item_id, data, imagen_url)
+
     if not item:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
+
     return item
 
 

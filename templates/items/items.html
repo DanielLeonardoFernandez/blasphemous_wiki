@@ -189,6 +189,21 @@ function ocultarFormEditar() {
 
 // Aquí deberías agregar fetch POST, PUT y DELETE igual que en interacciones,
 // adaptando la URL a /items/ y los campos del form
+//eliminar item
+async function eliminarItem(id) {
+    const confirmar = confirm("¿Seguro que deseas eliminar este ítem?");
+    if (!confirmar) return;
+
+    const response = await fetch(`/items/${id}`, { method: "DELETE" });
+
+    if(response.ok) {
+        alert("Ítem eliminado exitosamente.");
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al eliminar el ítem: " + (error.detail || "Desconocido"));
+    }
+}
 </script>
 
 {% include 'footer.html' %}

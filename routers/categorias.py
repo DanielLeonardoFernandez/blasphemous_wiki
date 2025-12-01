@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
+from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form, Request
 from sqlmodel import Session
 from db import get_session
 from schemas import CategoriaCreate, CategoriaRead, CategoriaUpdate
@@ -6,6 +6,11 @@ import crud
 from supa.supabase import upload_to_bucket
 from typing import Optional
 from os import getenv
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+
+templates = Jinja2Templates(directory="templates")
 
 
 router = APIRouter(prefix="/categorias", tags=["Categorías"])
@@ -51,6 +56,7 @@ def list_categorias(session: Session = Depends(get_session)):
         for c in categorias
     ]
 
+"""
 # ---------------------------
 # LISTAR ELIMINADAS
 # ---------------------------
@@ -66,7 +72,20 @@ def listar_categorias_eliminadas(session: Session = Depends(get_session)):
         )
         for c in categorias
     ]
+"""
 
+# ---------------------------
+# LISTAR ELIMINADAS (HTML)
+# ---------------------------
+@router.get("/eliminadas", response_class=HTMLResponse)
+def listar_categorias_eliminadas_html(request: Request, session: Session = Depends(get_session)):
+    categorias = crud.listar_categorias_eliminadas(session)
+    return templates.TemplateResponse("categorias/eliminados.html", {
+        "request": request,
+        "categorias": categorias
+    })
+
+"""
 # ---------------------------
 # OBTENER POR ID
 # ---------------------------
@@ -81,6 +100,20 @@ def get_categoria(categoria_id: int, session: Session = Depends(get_session)):
         descripcion=categoria.descripcion,
         imagen_url=categoria.imagen_url
     )
+"""
+
+# ---------------------------
+# DETALLES DE CATEGORÍA (HTML)
+# ---------------------------
+@router.get("/id/{categoria_id}", response_class=HTMLResponse)
+def categoria_detalles_html(request: Request, categoria_id: int, session: Session = Depends(get_session)):
+    categoria = crud.get_categoria(session, categoria_id)
+    if not categoria:
+        raise HTTPException(status_code=404, detail="Categoría no encontrada")
+    return templates.TemplateResponse("categorias/categoria_detalles.html", {
+        "request": request,
+        "categoria": categoria
+    })
 
 # ---------------------------
 # ACTUALIZAR
@@ -152,3 +185,4 @@ def restaurar_categoria(categoria_id: int, session: Session = Depends(get_sessio
     if not ok:
         raise HTTPException(status_code=404, detail="Categoría no encontrada o no estaba eliminada")
     return {"ok": True, "mensaje": "Categoría restaurada correctamente"}
+

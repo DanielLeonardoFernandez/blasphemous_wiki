@@ -1,10 +1,192 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'header.html' %}
 
-</body>
-</html>
+<h1>Categorías de la Wiki de Blasphemous</h1>
+
+<!-- Botones principales -->
+<div class="mb-4">
+    <!-- Botón para mostrar el formulario de crear -->
+    <button class="btn btn-success" onclick="mostrarFormCrear()">Crear nueva categoría</button>
+
+    <!-- Ver eliminadas -->
+    <a href="/categorias/eliminadas" class="btn btn-secondary">Ver eliminadas</a>
+</div>
+
+<!-- FORMULARIO CREAR (oculto inicialmente) -->
+<div id="form-crear" class="card p-3 mb-4" style="display:none; max-width: 500px;">
+    <h4>Crear nueva categoría</h4>
+    <form id="crear-form" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen</label>
+            <input type="file" name="imagen" class="form-control">
+        </div>
+
+        <button class="btn btn-success" type="submit">Crear</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormCrear()">Cancelar</button>
+    </form>
+</div>
+
+<!-- FORMULARIO EDITAR (oculto inicialmente) -->
+<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:500px;">
+    <h4>Editar categoría</h4>
+    <form id="editar-form" enctype="multipart/form-data">
+        <input type="hidden" name="categoria_id" id="categoria_id">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" id="editar-descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen nueva (opcional)</label>
+            <input type="file" name="imagen" id="editar-imagen" class="form-control">
+            <p class="text-muted">Si no subes nada, la imagen se mantiene.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
+    </form>
+</div>
+
+{% if categorias %}
+    <div class="row">
+    {% for categoria in categorias %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+
+                {% if categoria.imagen_url %}
+                    <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ categoria.nombre }}</h5>
+                    <p class="card-text">{{ categoria.descripcion }}</p>
+                    <p><strong>ID:</strong> {{ categoria.id }}</p>
+
+                    <div class="d-flex justify-content-between">
+                        <!-- Editar con fetch -->
+                        <button class="btn btn-primary btn-sm"
+                            onclick='mostrarFormEditar({{ categoria.id }}, "{{ categoria.nombre|escape }}", "{{ categoria.descripcion|escape }}")'>
+                            Editar
+                        </button>
+
+                        <!-- Eliminar REAL con fetch DELETE -->
+                        <button class="btn btn-danger btn-sm" onclick="eliminarCategoria({{ categoria.id }})">
+                            Eliminar
+                        </button>
+                    </div>
+
+                    <!-- Ver detalles usando tu endpoint GET /categorias/id/{id} -->
+                    <div class="mt-2">
+                        <a href="/categorias/id/{{ categoria.id }}" class="btn btn-outline-info btn-sm">Ver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+
+{% else %}
+    <p>No hay categorías activas.</p>
+{% endif %}
+
+<script>
+// Mostrar / ocultar formulario crear
+function mostrarFormCrear() {
+    document.getElementById("form-crear").style.display = "block";
+}
+function ocultarFormCrear() {
+    document.getElementById("form-crear").style.display = "none";
+}
+
+// Enviar POST /categorias con fetch
+document.getElementById("crear-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const response = await fetch("/categorias/", {
+        method: "POST",
+        body: formData
+    });
+
+    if(response.ok){
+        alert("Categoría creada exitosamente.");
+        form.reset();
+        ocultarFormCrear();
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al crear la categoría: " + (error.detail || "Desconocido"));
+    }
+});
+
+// Mostrar / ocultar formulario editar
+function mostrarFormEditar(id, nombre, descripcion) {
+    document.getElementById("form-editar").style.display = "block";
+    document.getElementById("categoria_id").value = id;
+    document.getElementById("editar-nombre").value = nombre;
+    document.getElementById("editar-descripcion").value = descripcion;
+}
+function ocultarFormEditar() {
+    document.getElementById("form-editar").style.display = "none";
+    document.getElementById("editar-form").reset();
+}
+
+// Enviar PUT /categorias/{id} con fetch
+document.getElementById("editar-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const id = document.getElementById("categoria_id").value;
+    const formData = new FormData(form);
+
+    const response = await fetch(`/categorias/${id}`, {
+        method: "PUT",
+        body: formData
+    });
+
+    if(response.ok){
+        alert("Categoría actualizada exitosamente.");
+        form.reset();
+        ocultarFormEditar();
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al actualizar la categoría: " + (error.detail || "Desconocido"));
+    }
+});
+
+// Eliminar categoría
+async function eliminarCategoria(id) {
+    const confirmar = confirm("¿Seguro que deseas eliminar esta categoría?");
+    if (!confirmar) return;
+
+    const response = await fetch(`/categorias/${id}`, { method: "DELETE" });
+
+    if(response.ok) {
+        alert("Categoría eliminada exitosamente.");
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al eliminar la categoría: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

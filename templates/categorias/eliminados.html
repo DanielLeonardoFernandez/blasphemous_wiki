@@ -1,0 +1,55 @@
+{% include 'header.html' %}
+
+<h1>Categorías Eliminadas</h1>
+
+<!-- Volver a lista activa -->
+<a href="/categorias" class="btn btn-secondary mb-3">Volver a la lista</a>
+
+{% if categorias %}
+    <div class="row">
+        {% for categoria in categorias %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+
+                {% if categoria.imagen_url %}
+                    <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ categoria.nombre }}</h5>
+                    <p class="card-text">{{ categoria.descripcion }}</p>
+                    <p><strong>ID:</strong> {{ categoria.id }}</p>
+
+                    <button class="btn btn-success btn-sm" onclick="restaurarCategoria({{ categoria.id }})">
+                        Restaurar
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No hay categorías eliminadas.</p>
+{% endif %}
+
+<script>
+async function restaurarCategoria(id) {
+    if (!confirm("¿Seguro que deseas restaurar esta categoría?")) return;
+
+    const response = await fetch(`/categorias/${id}/restaurar`, {
+        method: "PUT"
+    });
+
+    if (response.ok) {
+        alert("Categoría restaurada exitosamente.");
+        location.reload(); // recarga para actualizar la lista
+    } else {
+        const error = await response.json();
+        alert("Error al restaurar la categoría: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

@@ -1,10 +1,12 @@
-from fastapi import FastAPI, Request, HTTPException
+from fastapi import FastAPI, Request, HTTPException, Depends
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
-from db import create_tables
+from db import create_tables, get_session
 from routers import items, categorias, ubicaciones, interacciones, imagenes
+from crud import list_categorias
+from sqlmodel import Session
 
 app = FastAPI(lifespan=create_tables, title="Blasphemous Wiki API")
 
@@ -47,4 +49,12 @@ async def http_exception_handler(request: Request, exc: HTTPException):
         "error.html",
         {"request": request, "status_code": exc.status_code, "detail": exc.detail},
         status_code=exc.status_code,
+    )
+
+@app.get("/categorias", response_class=HTMLResponse)
+async def categorias_page(request: Request, session: Session = Depends(get_session)):
+    categorias = list_categorias(session)
+    return templates.TemplateResponse(
+        "categorias/categorias.html",
+        {"request": request, "categorias": categorias}
     )

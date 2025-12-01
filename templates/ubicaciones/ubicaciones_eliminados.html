@@ -1,0 +1,56 @@
+{% include 'header.html' %}
+
+<h1>Ubicaciones Eliminadas</h1>
+
+<!-- Volver a lista activa -->
+<a href="/ubicaciones" class="btn btn-secondary mb-3">Volver a la lista</a>
+
+{% if ubicaciones %}
+    <div class="row">
+        {% for ubicacion in ubicaciones %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+
+                {% if ubicacion.imagen_url %}
+                    <img src="{{ ubicacion.imagen_url }}" class="card-img-top" alt="{{ ubicacion.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ ubicacion.nombre }}</h5>
+                    <p><strong>Tipo:</strong> {{ ubicacion.tipo or "No especificado" }}</p>
+                    <p class="card-text">{{ ubicacion.descripcion }}</p>
+                    <p><strong>ID:</strong> {{ ubicacion.id }}</p>
+
+                    <button class="btn btn-success btn-sm" onclick="restaurarUbicacion({{ ubicacion.id }})">
+                        Restaurar
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No hay ubicaciones eliminadas.</p>
+{% endif %}
+
+<script>
+async function restaurarUbicacion(id) {
+    if (!confirm("¿Seguro que deseas restaurar esta ubicación?")) return;
+
+    const response = await fetch(`/ubicaciones/${id}/restaurar`, {
+        method: "PUT"
+    });
+
+    if (response.ok) {
+        alert("Ubicación restaurada exitosamente.");
+        location.reload(); // recarga para actualizar la lista
+    } else {
+        const error = await response.json();
+        alert("Error al restaurar la ubicación: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

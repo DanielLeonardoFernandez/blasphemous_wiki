@@ -1,10 +1,196 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'header.html' %}
 
-</body>
-</html>
+<h1>Interacciones de la Wiki de Blasphemous</h1>
+
+<!-- Botones principales -->
+<div class="mb-4">
+    <button class="btn btn-success" onclick="mostrarFormCrear()">Crear nueva interacción</button>
+    <a href="/interacciones/eliminadas" class="btn btn-secondary">Ver eliminadas</a>
+</div>
+
+<!-- FORMULARIO CREAR (oculto inicialmente) -->
+<div id="form-crear" class="card p-3 mb-4" style="display:none; max-width: 500px;">
+    <h4>Crear nueva interacción</h4>
+    <form id="crear-form" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <input type="text" name="tipo" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen</label>
+            <input type="file" name="imagen" class="form-control">
+        </div>
+
+        <button class="btn btn-success" type="submit">Crear</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormCrear()">Cancelar</button>
+    </form>
+</div>
+
+<!-- FORMULARIO EDITAR (oculto inicialmente) -->
+<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:500px;">
+    <h4>Editar interacción</h4>
+    <form id="editar-form" enctype="multipart/form-data">
+        <input type="hidden" name="interaccion_id" id="interaccion_id">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <input type="text" name="tipo" id="editar-tipo" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" id="editar-descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen nueva (opcional)</label>
+            <input type="file" name="imagen" id="editar-imagen" class="form-control">
+            <p class="text-muted">Si no subes nada, la imagen se mantiene.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
+    </form>
+</div>
+
+{% if interacciones %}
+    <div class="row">
+    {% for interaccion in interacciones %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+
+                {% if interaccion.imagen_url %}
+                    <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ interaccion.nombre }}</h5>
+                    <p class="card-text"><strong>Tipo:</strong> {{ interaccion.tipo }}</p>
+                    <p class="card-text">{{ interaccion.descripcion }}</p>
+                    <p><strong>ID:</strong> {{ interaccion.id }}</p>
+
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-primary btn-sm"
+                            onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
+                            Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
+                            Eliminar
+                        </button>
+                    </div>
+
+                    <div class="mt-2">
+                        <a href="/interacciones/id/{{ interaccion.id }}" class="btn btn-outline-info btn-sm">Ver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+    </div>
+{% else %}
+    <p>No hay interacciones activas.</p>
+{% endif %}
+
+<script>
+// Mostrar / ocultar formulario crear
+function mostrarFormCrear() {
+    document.getElementById("form-crear").style.display = "block";
+}
+function ocultarFormCrear() {
+    document.getElementById("form-crear").style.display = "none";
+}
+
+// Enviar POST /interacciones con fetch
+document.getElementById("crear-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const formData = new FormData(form);
+
+    const response = await fetch("/interacciones/", {
+        method: "POST",
+        body: formData
+    });
+
+    if(response.ok){
+        alert("Interacción creada exitosamente.");
+        form.reset();
+        ocultarFormCrear();
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al crear la interacción: " + (error.detail || "Desconocido"));
+    }
+});
+
+// Mostrar / ocultar formulario editar
+function mostrarFormEditar(id, nombre, tipo, descripcion) {
+    document.getElementById("form-editar").style.display = "block";
+    document.getElementById("interaccion_id").value = id;
+    document.getElementById("editar-nombre").value = nombre;
+    document.getElementById("editar-tipo").value = tipo;
+    document.getElementById("editar-descripcion").value = descripcion;
+}
+function ocultarFormEditar() {
+    document.getElementById("form-editar").style.display = "none";
+    document.getElementById("editar-form").reset();
+}
+
+// Enviar PUT /interacciones/{id} con fetch
+document.getElementById("editar-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const id = document.getElementById("interaccion_id").value;
+    const formData = new FormData(form);
+
+    const response = await fetch(`/interacciones/${id}`, {
+        method: "PUT",
+        body: formData
+    });
+
+    if(response.ok){
+        alert("Interacción actualizada exitosamente.");
+        form.reset();
+        ocultarFormEditar();
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al actualizar la interacción: " + (error.detail || "Desconocido"));
+    }
+});
+
+// Eliminar interacción
+async function eliminarInteraccion(id) {
+    const confirmar = confirm("¿Seguro que deseas eliminar esta interacción?");
+    if (!confirmar) return;
+
+    const response = await fetch(`/interacciones/${id}`, { method: "DELETE" });
+
+    if(response.ok) {
+        alert("Interacción eliminada exitosamente.");
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al eliminar la interacción: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

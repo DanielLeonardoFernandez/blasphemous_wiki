@@ -80,7 +80,7 @@ def listar_categorias_eliminadas(session: Session = Depends(get_session)):
 @router.get("/eliminadas", response_class=HTMLResponse)
 def listar_categorias_eliminadas_html(request: Request, session: Session = Depends(get_session)):
     categorias = crud.listar_categorias_eliminadas(session)
-    return templates.TemplateResponse("categorias/eliminados.html", {
+    return templates.TemplateResponse("categorias/ubicaciones_eliminados.html", {
         "request": request,
         "categorias": categorias
     })

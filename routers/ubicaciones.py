@@ -5,6 +5,11 @@ from schemas import UbicacionCreate, UbicacionRead
 import crud
 from supa.supabase import upload_to_bucket
 from os import getenv
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from starlette.requests import Request
+
+templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(prefix="/ubicaciones", tags=["Ubicaciones"])
 
@@ -40,7 +45,7 @@ async def create_ubicacion(
         imagen_url=u.imagen_url
     )
 
-
+"""
 # ---------------------------
 # LISTAR TODAS
 # ---------------------------
@@ -51,8 +56,23 @@ def list_ubicaciones(session: Session = Depends(get_session)):
         UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion, imagen_url=u.imagen_url)
         for u in ubicaciones
     ]
+"""
 
 # ---------------------------
+# LISTAR UBICACIONES (HTML)
+# ---------------------------
+@router.get("/")
+def list_ubicaciones(request: Request, session: Session = Depends(get_session)):
+    ubicaciones = crud.list_ubicaciones(session)
+    return templates.TemplateResponse(
+        "ubicaciones/ubicaciones.html",
+        {
+            "request": request,
+            "ubicaciones": ubicaciones
+        }
+    )
+
+"""# ---------------------------
 # LISTAR ELIMINADAS (SOFT DELETE)
 # ---------------------------
 @router.get("/eliminadas", response_model=list[UbicacionRead])
@@ -62,7 +82,29 @@ def listar_ubicaciones_eliminadas(session: Session = Depends(get_session)):
         UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion, imagen_url=u.imagen_url)
         for u in ubicaciones
     ]
+"""
+# ---------------------------
+# LISTAR ELIMINADAS (SOFT DELETE)
+# ---------------------------
+@router.get("/eliminadas")
+def listar_ubicaciones_eliminadas(request: Request, session: Session = Depends(get_session)):
+    ubicaciones = crud.listar_ubicaciones_eliminadas(session)
 
+    # Si la petición acepta HTML, renderiza plantilla
+    if "text/html" in request.headers.get("accept", ""):
+        return templates.TemplateResponse(
+            "ubicaciones/ubicaciones_eliminados.html",
+            {"request": request, "ubicaciones": ubicaciones}
+        )
+
+    # Si no, devuelve JSON
+    return [
+        UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion, imagen_url=u.imagen_url)
+        for u in ubicaciones
+    ]
+
+
+"""
 # ---------------------------
 # OBTENER POR ID
 # ---------------------------
@@ -72,6 +114,26 @@ def get_ubicacion(ubicacion_id: int, session: Session = Depends(get_session)):
     if not u:
         raise HTTPException(status_code=404, detail="Ubicación no encontrada")
     return UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion, imagen_url=u.imagen_url)
+"""
+# ---------------------------
+# OBTENER POR ID
+# ---------------------------
+@router.get("/id/{ubicacion_id}")
+def get_ubicacion(ubicacion_id: int, request: Request, session: Session = Depends(get_session)):
+    u = crud.get_ubicacion(session, ubicacion_id)
+    if not u:
+        raise HTTPException(status_code=404, detail="Ubicación no encontrada")
+
+    # Si la petición acepta HTML, renderiza plantilla
+    if "text/html" in request.headers.get("accept", ""):
+        return templates.TemplateResponse(
+            "ubicaciones/ubicaciones_detalles.html",
+            {"request": request, "ubicacion": u}
+        )
+
+    # Si no, devuelve JSON
+    return UbicacionRead(id=u.id, nombre=u.nombre, tipo=u.tipo, descripcion=u.descripcion, imagen_url=u.imagen_url)
+
 
 # ---------------------------
 # ACTUALIZAR

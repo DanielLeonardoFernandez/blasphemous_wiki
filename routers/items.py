@@ -7,7 +7,11 @@ from typing import Optional, List
 from supa.supabase import upload_to_bucket
 from os import getenv
 from pydantic import BaseModel, Field
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+from fastapi import Request
 
+templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(prefix="/items", tags=["Items"])
 
@@ -51,7 +55,7 @@ async def crear_item(
 
     return item
 
-
+"""
 # ---------------------------
 # READ ALL
 # ---------------------------
@@ -67,7 +71,29 @@ def listar_items(session: Session = Depends(get_session)):
 @router.get("/estado/eliminados", response_model=List[ItemRead])
 def listar_items_eliminados(session: Session = Depends(get_session)):
     return crud.listar_items_eliminados(session)
+"""
+# ---------------------------
+# LISTAR TODOS LOS ITEMS
+# ---------------------------
+@router.get("/", response_class=HTMLResponse)
+def listar_items(request: Request, session: Session = Depends(get_session)):
+    items = crud.listar_items(session)
+    return templates.TemplateResponse("items/items.html", {
+        "request": request,
+        "items": items
+    })
 
+# ---------------------------
+# LISTAR ITEMS ELIMINADOS (SOFT DELETE)
+# 🔹 Debe ir antes de cualquier ruta con {item_id}
+# ---------------------------
+@router.get("/estado/eliminados", response_class=HTMLResponse)
+def listar_items_eliminados(request: Request, session: Session = Depends(get_session)):
+    items = crud.listar_items_eliminados(session)
+    return templates.TemplateResponse("items/items_eliminados.html", {
+        "request": request,
+        "items": items
+    })
 
 # ---------------------------
 # SEARCH / FILTER
@@ -111,7 +137,7 @@ def restaurar_item(item_id: int, session: Session = Depends(get_session)):
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
     return {"ok": True, "mensaje": "Ítem restaurado correctamente"}
 
-
+"""
 # ---------------------------
 # READ ONE
 # ---------------------------
@@ -121,7 +147,20 @@ def obtener_item(item_id: int, session: Session = Depends(get_session)):
     if not item:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
     return item
+"""
 
+# ---------------------------
+# OBTENER ITEM POR ID
+# ---------------------------
+@router.get("/{item_id}", response_class=HTMLResponse)
+def obtener_item(request: Request, item_id: int, session: Session = Depends(get_session)):
+    item = crud.get_item(session, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+    return templates.TemplateResponse("items/items_detalles.html", {
+        "request": request,
+        "item": item
+    })
 
 # ---------------------------
 # UPDATE

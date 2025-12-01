@@ -1,10 +1,194 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'header.html' %}
 
-</body>
-</html>
+<h1>Items de la Wiki de Blasphemous</h1>
+
+<!-- Botones principales -->
+<div class="mb-4">
+    <button class="btn btn-success" onclick="mostrarFormCrear()">Crear nuevo item</button>
+    <a href="/items/estado/eliminados" class="btn btn-secondary">Ver eliminados</a>
+</div>
+
+<!-- FORMULARIO CREAR (oculto inicialmente) -->
+<div id="form-crear" class="card p-3 mb-4" style="display:none; max-width: 600px;">
+    <h4>Crear nuevo item</h4>
+    <form id="crear-form" enctype="multipart/form-data">
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Costo</label>
+            <input type="number" name="costo" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Indispensable</label>
+            <input type="checkbox" name="indispensable">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría ID</label>
+            <input type="number" name="categoria_id" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen</label>
+            <input type="file" name="imagen" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ubicaciones (IDs separados por coma)</label>
+            <input type="text" name="ubicaciones" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Interacciones (IDs separados por coma)</label>
+            <input type="text" name="interacciones" class="form-control">
+        </div>
+
+        <button class="btn btn-success" type="submit">Crear</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormCrear()">Cancelar</button>
+    </form>
+</div>
+
+<!-- FORMULARIO EDITAR (oculto inicialmente) -->
+<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:600px;">
+    <h4>Editar item</h4>
+    <form id="editar-form" enctype="multipart/form-data">
+        <input type="hidden" name="item_id" id="item_id">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" id="editar-descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Costo</label>
+            <input type="number" name="costo" id="editar-costo" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Indispensable</label>
+            <input type="checkbox" name="indispensable" id="editar-indispensable">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Categoría ID</label>
+            <input type="number" name="categoria_id" id="editar-categoria_id" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen nueva (opcional)</label>
+            <input type="file" name="imagen" id="editar-imagen" class="form-control">
+            <p class="text-muted">Si no subes nada, la imagen se mantiene.</p>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Ubicaciones (IDs separados por coma)</label>
+            <input type="text" name="ubicaciones" id="editar-ubicaciones" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Interacciones (IDs separados por coma)</label>
+            <input type="text" name="interacciones" id="editar-interacciones" class="form-control">
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
+    </form>
+</div>
+
+{% if items %}
+<div class="row">
+    {% for item in items %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                {% if item.imagen_url %}
+                    <img src="{{ item.imagen_url }}" class="card-img-top" alt="{{ item.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ item.nombre }}</h5>
+                    <p class="card-text">{{ item.descripcion }}</p>
+                    <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
+                    <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
+                    <p><strong>Categoría ID:</strong> {{ item.categoria_id or "No asignada" }}</p>
+                    <p><strong>Ubicaciones:</strong> {% for u in item.ubicaciones %}{{ u.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    <p><strong>Interacciones:</strong> {% for i in item.interacciones %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    <p><strong>ID:</strong> {{ item.id }}</p>
+
+                    <div class="d-flex justify-content-between">
+                        <button class="btn btn-primary btn-sm"
+                            onclick='mostrarFormEditar(
+                                {{ item.id }},
+                                "{{ item.nombre|escape }}",
+                                "{{ item.descripcion|escape }}",
+                                "{{ item.costo or "" }}",
+                                {{ "true" if item.indispensable else "false" }},
+                                "{{ item.categoria_id or "" }}",
+                                "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
+                                "{{ item.interacciones|map(attribute="id")|join(",") }}"
+                            )'>
+                            Editar
+                        </button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarItem({{ item.id }})">
+                            Eliminar
+                        </button>
+                    </div>
+
+                    <div class="mt-2">
+                        <a href="/items/{{ item.id }}" class="btn btn-outline-info btn-sm">Ver</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endfor %}
+</div>
+{% else %}
+<p>No hay items activos.</p>
+{% endif %}
+
+<script>
+// Mostrar / ocultar formulario crear
+function mostrarFormCrear() {
+    document.getElementById("form-crear").style.display = "block";
+}
+function ocultarFormCrear() {
+    document.getElementById("form-crear").style.display = "none";
+}
+
+// Mostrar / ocultar formulario editar
+function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categoria_id, ubicaciones, interacciones) {
+    document.getElementById("form-editar").style.display = "block";
+    document.getElementById("item_id").value = id;
+    document.getElementById("editar-nombre").value = nombre;
+    document.getElementById("editar-descripcion").value = descripcion;
+    document.getElementById("editar-costo").value = costo;
+    document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
+    document.getElementById("editar-categoria_id").value = categoria_id;
+    document.getElementById("editar-ubicaciones").value = ubicaciones;
+    document.getElementById("editar-interacciones").value = interacciones;
+}
+function ocultarFormEditar() {
+    document.getElementById("form-editar").style.display = "none";
+    document.getElementById("editar-form").reset();
+}
+
+// Aquí deberías agregar fetch POST, PUT y DELETE igual que en interacciones,
+// adaptando la URL a /items/ y los campos del form
+</script>
+
+{% include 'footer.html' %}

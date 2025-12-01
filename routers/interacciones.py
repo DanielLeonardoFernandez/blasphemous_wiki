@@ -5,6 +5,11 @@ from schemas import InteraccionCreate, InteraccionRead, InteraccionUpdate
 import crud
 from supa.supabase import upload_to_bucket
 from os import getenv
+from fastapi import Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
+
+templates = Jinja2Templates(directory="templates")
 
 router = APIRouter(prefix="/interacciones", tags=["Interacciones"])
 
@@ -36,7 +41,7 @@ async def create_interaccion(
     )
 
 
-# ---------------------------
+"""# ---------------------------
 # LISTAR TODAS
 # ---------------------------
 @router.get("/", response_model=list[InteraccionRead])
@@ -61,6 +66,42 @@ def get_interaccion(interaccion_id: int, session: Session = Depends(get_session)
     if not i:
         raise HTTPException(status_code=404, detail="Interacción no encontrada")
     return InteraccionRead(id=i.id, descripcion=i.descripcion, imagen_url=i.imagen_url)
+"""
+# ---------------------------
+# LISTAR TODAS
+# ---------------------------
+@router.get("/", response_class=HTMLResponse)
+def list_interacciones(request: Request, session: Session = Depends(get_session)):
+    interacciones = crud.list_interacciones(session)
+    interacciones_data = [
+        {"id": i.id, "descripcion": i.descripcion, "imagen_url": i.imagen_url}
+        for i in interacciones
+    ]
+    return templates.TemplateResponse("interacciones/interacciones.html", {"request": request, "interacciones": interacciones_data})
+
+# ---------------------------
+# LISTAR ELIMINADAS (SOFT DELETE)
+# ---------------------------
+@router.get("/eliminadas", response_class=HTMLResponse)
+def listar_interacciones_eliminadas(request: Request, session: Session = Depends(get_session)):
+    interacciones = crud.listar_interacciones_eliminadas(session)
+    interacciones_data = [
+        {"id": i.id, "descripcion": i.descripcion, "imagen_url": i.imagen_url}
+        for i in interacciones
+    ]
+    return templates.TemplateResponse("interacciones/interacciones_eliminados.html", {"request": request, "interacciones": interacciones_data})
+
+# ---------------------------
+# OBTENER POR ID
+# ---------------------------
+@router.get("/id/{interaccion_id}", response_class=HTMLResponse)
+def get_interaccion(interaccion_id: int, request: Request, session: Session = Depends(get_session)):
+    i = crud.get_interaccion(session, interaccion_id)
+    if not i:
+        return HTMLResponse(content="<h1>Interacción no encontrada</h1>", status_code=404)
+
+    interaccion_data = {"id": i.id, "descripcion": i.descripcion, "imagen_url": i.imagen_url}
+    return templates.TemplateResponse("interacciones/interacciones_detalles.html", {"request": request, "interaccion": interaccion_data})
 
 # ---------------------------
 # ACTUALIZAR

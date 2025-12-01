@@ -1,10 +1,121 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'header.html' %}
 
-</body>
-</html>
+<h1>Detalles de la Interacción</h1>
+
+<a href="/interacciones" class="btn btn-secondary mb-3">Volver a la lista</a>
+
+<div class="card mb-4" style="max-width: 600px;">
+    {% if interaccion.imagen_url %}
+        <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+    {% else %}
+        <img src="https://via.placeholder.com/600x300?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+    {% endif %}
+
+    <div class="card-body">
+        <h5 class="card-title">{{ interaccion.nombre }}</h5>
+        <p><strong>Tipo:</strong> {{ interaccion.tipo or "No especificado" }}</p>
+        <p class="card-text">{{ interaccion.descripcion or "Sin descripción" }}</p>
+        <p><strong>ID:</strong> {{ interaccion.id }}</p>
+
+        <div class="d-flex justify-content-between">
+            <!-- Editar con fetch -->
+            <button class="btn btn-primary btn-sm"
+                onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
+                Editar
+            </button>
+
+            <!-- Eliminar REAL con fetch DELETE -->
+            <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
+                Eliminar
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FORMULARIO EDITAR (oculto inicialmente) -->
+<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:500px;">
+    <h4>Editar interacción</h4>
+    <form id="editar-form" enctype="multipart/form-data">
+        <input type="hidden" name="interaccion_id" id="interaccion_id">
+
+        <div class="mb-3">
+            <label class="form-label">Nombre</label>
+            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Tipo</label>
+            <input type="text" name="tipo" id="editar-tipo" class="form-control">
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Descripción</label>
+            <textarea name="descripcion" id="editar-descripcion" class="form-control"></textarea>
+        </div>
+
+        <div class="mb-3">
+            <label class="form-label">Imagen nueva (opcional)</label>
+            <input type="file" name="imagen" id="editar-imagen" class="form-control">
+            <p class="text-muted">Si no subes nada, la imagen se mantiene.</p>
+        </div>
+
+        <button type="submit" class="btn btn-primary">Guardar cambios</button>
+        <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
+    </form>
+</div>
+
+<script>
+// Mostrar / ocultar formulario editar
+function mostrarFormEditar(id, nombre, tipo, descripcion) {
+    document.getElementById("form-editar").style.display = "block";
+    document.getElementById("interaccion_id").value = id;
+    document.getElementById("editar-nombre").value = nombre;
+    document.getElementById("editar-tipo").value = tipo;
+    document.getElementById("editar-descripcion").value = descripcion;
+}
+function ocultarFormEditar() {
+    document.getElementById("form-editar").style.display = "none";
+    document.getElementById("editar-form").reset();
+}
+
+// Enviar PUT /interacciones/{id} con fetch
+document.getElementById("editar-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    const form = e.target;
+    const id = document.getElementById("interaccion_id").value;
+    const formData = new FormData(form);
+
+    const response = await fetch(`/interacciones/${id}`, {
+        method: "PUT",
+        body: formData
+    });
+
+    if(response.ok){
+        alert("Interacción actualizada exitosamente.");
+        form.reset();
+        ocultarFormEditar();
+        location.reload(); // recarga la página de detalles
+    } else {
+        const error = await response.json();
+        alert("Error al actualizar la interacción: " + (error.detail || "Desconocido"));
+    }
+});
+
+// Eliminar interacción
+async function eliminarInteraccion(id) {
+    const confirmar = confirm("¿Seguro que deseas eliminar esta interacción?");
+    if (!confirmar) return;
+
+    const response = await fetch(`/interacciones/${id}`, { method: "DELETE" });
+
+    if(response.ok) {
+        alert("Interacción eliminada exitosamente.");
+        window.location.href = "/interacciones"; // vuelve a la lista
+    } else {
+        const error = await response.json();
+        alert("Error al eliminar la interacción: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

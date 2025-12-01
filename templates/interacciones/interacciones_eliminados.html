@@ -1,10 +1,56 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
+{% include 'header.html' %}
 
-</body>
-</html>
+<h1>Interacciones Eliminadas</h1>
+
+<!-- Volver a lista activa -->
+<a href="/interacciones" class="btn btn-secondary mb-3">Volver a la lista</a>
+
+{% if interacciones %}
+    <div class="row">
+        {% for interaccion in interacciones %}
+        <div class="col-md-4 mb-4">
+            <div class="card">
+
+                {% if interaccion.imagen_url %}
+                    <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+                {% else %}
+                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                {% endif %}
+
+                <div class="card-body">
+                    <h5 class="card-title">{{ interaccion.nombre }}</h5>
+                    <p><strong>Tipo:</strong> {{ interaccion.tipo or "No especificado" }}</p>
+                    <p class="card-text">{{ interaccion.descripcion }}</p>
+                    <p><strong>ID:</strong> {{ interaccion.id }}</p>
+
+                    <button class="btn btn-success btn-sm" onclick="restaurarInteraccion({{ interaccion.id }})">
+                        Restaurar
+                    </button>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <p>No hay interacciones eliminadas.</p>
+{% endif %}
+
+<script>
+async function restaurarInteraccion(id) {
+    if (!confirm("¿Seguro que deseas restaurar esta interacción?")) return;
+
+    const response = await fetch(`/interacciones/${id}/restaurar`, {
+        method: "PUT"
+    });
+
+    if (response.ok) {
+        alert("Interacción restaurada exitosamente.");
+        location.reload(); // recarga para actualizar la lista
+    } else {
+        const error = await response.json();
+        alert("Error al restaurar la interacción: " + (error.detail || "Desconocido"));
+    }
+}
+</script>
+
+{% include 'footer.html' %}

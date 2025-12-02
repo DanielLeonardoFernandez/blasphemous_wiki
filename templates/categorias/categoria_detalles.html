@@ -1,31 +1,30 @@
 {% include 'header.html' %}
 
-<h1>Detalles de la Ubicación</h1>
+<h1>Detalles de la Categoría</h1>
 
-<a href="/ubicaciones" class="btn btn-secondary mb-3">Volver a la lista</a>
+<a href="/categorias" class="btn btn-secondary mb-3">Volver a la lista</a>
 
 <div class="card mb-4" style="max-width: 600px;">
-    {% if ubicacion.imagen_url %}
-        <img src="{{ ubicacion.imagen_url }}" class="card-img-top" alt="{{ ubicacion.nombre }}">
+    {% if categoria.imagen_url %}
+        <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
     {% else %}
         <img src="https://via.placeholder.com/600x300?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
     {% endif %}
 
     <div class="card-body">
-        <h5 class="card-title">{{ ubicacion.nombre }}</h5>
-        <p><strong>Tipo:</strong> {{ ubicacion.tipo or "No especificado" }}</p>
-        <p class="card-text">{{ ubicacion.descripcion or "Sin descripción" }}</p>
-        <p><strong>ID:</strong> {{ ubicacion.id }}</p>
+        <h5 class="card-title">{{ categoria.nombre }}</h5>
+        <p class="card-text">{{ categoria.descripcion or "Sin descripción" }}</p>
+        <p><strong>ID:</strong> {{ categoria.id }}</p>
 
         <div class="d-flex justify-content-between">
-            <!-- Editar con fetch -->
+            <!-- Editar -->
             <button class="btn btn-primary btn-sm"
-                onclick='mostrarFormEditar({{ ubicacion.id }}, "{{ ubicacion.nombre|escape }}", "{{ ubicacion.tipo|escape }}", "{{ ubicacion.descripcion|escape }}")'>
+                onclick='mostrarFormEditar({{ categoria.id }}, "{{ categoria.nombre|escape }}", "{{ categoria.descripcion|escape }}")'>
                 Editar
             </button>
 
-            <!-- Eliminar REAL con fetch DELETE -->
-            <button class="btn btn-danger btn-sm" onclick="eliminarUbicacion({{ ubicacion.id }})">
+            <!-- Eliminar -->
+            <button class="btn btn-danger btn-sm" onclick="eliminarCategoria({{ categoria.id }})">
                 Eliminar
             </button>
         </div>
@@ -34,18 +33,13 @@
 
 <!-- FORMULARIO EDITAR (oculto inicialmente) -->
 <div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:500px;">
-    <h4>Editar ubicación</h4>
+    <h4>Editar categoría</h4>
     <form id="editar-form" enctype="multipart/form-data">
-        <input type="hidden" name="ubicacion_id" id="ubicacion_id">
+        <input type="hidden" name="categoria_id" id="categoria_id">
 
         <div class="mb-3">
             <label class="form-label">Nombre</label>
             <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <input type="text" name="tipo" id="editar-tipo" class="form-control">
         </div>
 
         <div class="mb-3">
@@ -66,54 +60,53 @@
 
 <script>
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, tipo, descripcion) {
+function mostrarFormEditar(id, nombre, descripcion) {
     document.getElementById("form-editar").style.display = "block";
-    document.getElementById("ubicacion_id").value = id;
+    document.getElementById("categoria_id").value = id;
     document.getElementById("editar-nombre").value = nombre;
-    document.getElementById("editar-tipo").value = tipo;
     document.getElementById("editar-descripcion").value = descripcion;
 }
+
 function ocultarFormEditar() {
     document.getElementById("form-editar").style.display = "none";
     document.getElementById("editar-form").reset();
 }
 
-// Enviar PUT /ubicaciones/{id} con fetch
+// PUT /categorias/{id}
 document.getElementById("editar-form").addEventListener("submit", async (e) => {
     e.preventDefault();
     const form = e.target;
-    const id = document.getElementById("ubicacion_id").value;
+    const id = document.getElementById("categoria_id").value;
+
     const formData = new FormData(form);
 
-    const response = await fetch(`/ubicaciones/${id}`, {
+    const response = await fetch(`/categorias/${id}`, {
         method: "PUT",
         body: formData
     });
 
     if(response.ok){
-        alert("Ubicación actualizada exitosamente.");
-        form.reset();
-        ocultarFormEditar();
-        location.reload(); // recarga la página de detalles
+        alert("Categoría actualizada exitosamente.");
+        location.reload();
     } else {
         const error = await response.json();
-        alert("Error al actualizar la ubicación: " + (error.detail || "Desconocido"));
+        alert("Error al actualizar la categoría: " + (error.detail || "Desconocido"));
     }
 });
 
-// Eliminar ubicación
-async function eliminarUbicacion(id) {
-    const confirmar = confirm("¿Seguro que deseas eliminar esta ubicación?");
+// DELETE /categorias/{id}
+async function eliminarCategoria(id) {
+    const confirmar = confirm("¿Seguro que deseas eliminar esta categoría?");
     if (!confirmar) return;
 
-    const response = await fetch(`/ubicaciones/${id}`, { method: "DELETE" });
+    const response = await fetch(`/categorias/${id}`, { method: "DELETE" });
 
     if(response.ok) {
-        alert("Ubicación eliminada exitosamente.");
-        window.location.href = "/ubicaciones"; // vuelve a la lista
+        alert("Categoría eliminada exitosamente.");
+        window.location.href = "/categorias";
     } else {
         const error = await response.json();
-        alert("Error al eliminar la ubicación: " + (error.detail || "Desconocido"));
+        alert("Error al eliminar la categoría: " + (error.detail || "Desconocido"));
     }
 }
 </script>

@@ -62,15 +62,16 @@ class ItemBase(SQLModel):
     descripcion: Optional[str] = None
     costo: Optional[int] = None
     indispensable: bool = False
-    categoria_id: Optional[int] = None
     imagen_url: Optional[str] = None  # ← agregado
 
 class ItemCreate(ItemBase):
+    categoria_ids: List[int] = Field(default_factory=list)
     ubicacion_ids: List[int] = Field(default_factory=list)
     interaccion_ids: List[int] = Field(default_factory=list)
 
 class ItemRead(ItemBase):
     id: int
+    categoria_ids: List[int] = Field(default_factory=list)
     ubicacion_ids: List[int] = Field(default_factory=list)
     interaccion_ids: List[int] = Field(default_factory=list)
 
@@ -79,7 +80,7 @@ class ItemUpdate(SQLModel):
     descripcion: Optional[str] = None
     costo: Optional[int] = None
     indispensable: Optional[bool] = None
-    categoria_id: Optional[int] = None
+    categoria_ids: Optional[List[int]] = None
     imagen_url: Optional[str] = None  # ← agregado
     ubicacion_ids: Optional[List[int]] = None
     interaccion_ids: Optional[List[int]] = None
@@ -94,7 +95,7 @@ if TYPE_CHECKING:
 
 class ItemReadFull(ItemBase):
     id: int
-    categoria: Optional["CategoriaRead"] = None
+    categorias: List["CategoriaRead"] = []
     ubicaciones: List["UbicacionRead"] = []
     interacciones: List["InteraccionRead"] = []
 

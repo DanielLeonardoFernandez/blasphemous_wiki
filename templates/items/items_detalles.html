@@ -16,7 +16,7 @@
         <p class="card-text">{{ item.descripcion or "Sin descripción" }}</p>
         <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
         <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-        <p><strong>Categoría ID:</strong> {{ item.categoria_id or "No asignada" }}</p>
+        <p><strong>Categorías:</strong> {% for c in item.categorias %}{{ c.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
         <p><strong>Ubicaciones:</strong> {% for u in item.ubicaciones %}{{ u.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
         <p><strong>Interacciones:</strong> {% for i in item.interacciones %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
         <p><strong>ID:</strong> {{ item.id }}</p>
@@ -30,7 +30,7 @@
                     "{{ item.descripcion|escape }}",
                     "{{ item.costo or "" }}",
                     {{ "true" if item.indispensable else "false" }},
-                    "{{ item.categoria_id or "" }}",
+                    "{{ item.categorias|map(attribute="id")|join(",") }}",
                     "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
                     "{{ item.interacciones|map(attribute="id")|join(",") }}"
                 )'>
@@ -72,8 +72,8 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Categoría ID</label>
-            <input type="number" name="categoria_id" id="editar-categoria_id" class="form-control">
+            <label class="form-label">Categoría (IDs separados por coma)</label>
+            <input type="text" name="categoria_ids" id="editar-categoria_ids" class="form-control">
         </div>
 
         <div class="mb-3">
@@ -106,7 +106,7 @@ function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, catego
     document.getElementById("editar-descripcion").value = descripcion;
     document.getElementById("editar-costo").value = costo;
     document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-    document.getElementById("editar-categoria_id").value = categoria_id;
+    document.getElementById("editar-categoria_ids").value = categoria_ids;
     document.getElementById("editar-ubicaciones").value = ubicaciones;
     document.getElementById("editar-interacciones").value = interacciones;
 }

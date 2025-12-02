@@ -8,7 +8,10 @@
     <a href="/items/estado/eliminados" class="btn btn-secondary">Ver eliminados</a>
 </div>
 
-<!-- FORMULARIO CREAR (oculto inicialmente) -->
+<!-- BARRA DE BÚSQUEDA -->
+{% include 'items/items_search.html' %}
+
+<!-- FORMULARIO CREAR -->
 <div id="form-crear" class="card p-3 mb-4" style="display:none; max-width: 600px;">
     <h4>Crear nuevo item</h4>
     <form id="crear-form" enctype="multipart/form-data">
@@ -33,8 +36,8 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Categoría ID</label>
-            <input type="number" name="categoria_id" class="form-control">
+            <label class="form-label">Categorías (IDs separados por coma)</label>
+            <input type="text" name="categoria_ids" class="form-control">
         </div>
 
         <div class="mb-3">
@@ -44,12 +47,12 @@
 
         <div class="mb-3">
             <label class="form-label">Ubicaciones (IDs separados por coma)</label>
-            <input type="text" name="ubicaciones" class="form-control">
+            <input type="text" name="ubicacion_ids" class="form-control">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Interacciones (IDs separados por coma)</label>
-            <input type="text" name="interacciones" class="form-control">
+            <input type="text" name="interaccion_ids" class="form-control">
         </div>
 
         <button class="btn btn-success" type="submit">Crear</button>
@@ -57,7 +60,7 @@
     </form>
 </div>
 
-<!-- FORMULARIO EDITAR (oculto inicialmente) -->
+<!-- FORMULARIO EDITAR -->
 <div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:600px;">
     <h4>Editar item</h4>
     <form id="editar-form" enctype="multipart/form-data">
@@ -84,8 +87,8 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Categoría ID</label>
-            <input type="number" name="categoria_id" id="editar-categoria_id" class="form-control">
+            <label class="form-label">Categorías (IDs separados por coma)</label>
+            <input type="text" name="categoria_ids" id="editar-categoria_ids" class="form-control">
         </div>
 
         <div class="mb-3">
@@ -96,12 +99,12 @@
 
         <div class="mb-3">
             <label class="form-label">Ubicaciones (IDs separados por coma)</label>
-            <input type="text" name="ubicaciones" id="editar-ubicaciones" class="form-control">
+            <input type="text" name="ubicacion_ids" id="editar-ubicacion_ids" class="form-control">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Interacciones (IDs separados por coma)</label>
-            <input type="text" name="interacciones" id="editar-interacciones" class="form-control">
+            <input type="text" name="interaccion_ids" id="editar-interaccion_ids" class="form-control">
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
@@ -125,9 +128,35 @@
                     <p class="card-text">{{ item.descripcion }}</p>
                     <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
                     <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-                    <p><strong>Categoría ID:</strong> {{ item.categoria_id or "No asignada" }}</p>
-                    <p><strong>Ubicaciones:</strong> {% for u in item.ubicaciones %}{{ u.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
-                    <p><strong>Interacciones:</strong> {% for i in item.interacciones %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
+                    <p><strong>Categorías:</strong>
+                        {% if item.categoria_ids %}
+                            {% for cid in item.categoria_ids %}
+                                {{ cid }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Ninguna
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Ubicaciones:</strong>
+                        {% if item.ubicacion_ids %}
+                            {% for uid in item.ubicacion_ids %}
+                                {{ uid }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Ninguna
+                        {% endif %}
+                    </p>
+
+                    <p><strong>Interacciones:</strong>
+                        {% if item.interaccion_ids %}
+                            {% for iid in item.interaccion_ids %}
+                                {{ iid }}{% if not loop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            Ninguna
+                        {% endif %}
+                    </p>
                     <p><strong>ID:</strong> {{ item.id }}</p>
 
                     <div class="d-flex justify-content-between">
@@ -138,7 +167,7 @@
                                 "{{ item.descripcion|escape }}",
                                 "{{ item.costo or "" }}",
                                 {{ "true" if item.indispensable else "false" }},
-                                "{{ item.categoria_id or "" }}",
+                                "{{ item.categorias|map(attribute="id")|join(",") }}",
                                 "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
                                 "{{ item.interacciones|map(attribute="id")|join(",") }}"
                             )'>
@@ -171,32 +200,118 @@ function ocultarFormCrear() {
 }
 
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categoria_id, ubicaciones, interacciones) {
+function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categorias, ubicaciones, interacciones) {
     document.getElementById("form-editar").style.display = "block";
     document.getElementById("item_id").value = id;
     document.getElementById("editar-nombre").value = nombre;
     document.getElementById("editar-descripcion").value = descripcion;
     document.getElementById("editar-costo").value = costo;
     document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-    document.getElementById("editar-categoria_id").value = categoria_id;
-    document.getElementById("editar-ubicaciones").value = ubicaciones;
-    document.getElementById("editar-interacciones").value = interacciones;
+
+    document.getElementById("editar-categoria_ids").value = categorias;
+    document.getElementById("editar-ubicacion_ids").value = ubicaciones;
+    document.getElementById("editar-interaccion_ids").value = interacciones;
 }
+
 function ocultarFormEditar() {
     document.getElementById("form-editar").style.display = "none";
     document.getElementById("editar-form").reset();
 }
 
-// Aquí deberías agregar fetch POST, PUT y DELETE igual que en interacciones,
-// adaptando la URL a /items/ y los campos del form
-//eliminar item
+//-----------------------------------------
+// 🟢 CREAR ITEM (listas correctamente enviadas como números)
+//-----------------------------------------
+document.getElementById("crear-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const raw = new FormData(form);
+
+    // Función para procesar listas de IDs
+    function addList(fieldName) {
+        const value = raw.get(fieldName)?.trim() || "";
+        raw.delete(fieldName);
+
+        if (value !== "") {
+            value
+                .split(",")                // separar por comas
+                .map(x => x.trim())        // eliminar espacios
+                .filter(x => x !== "")     // ignorar entradas vacías
+                .forEach(v => raw.append(fieldName, Number(v))); // enviar como número
+        }
+    }
+
+    addList("categoria_ids");
+    addList("ubicacion_ids");
+    addList("interaccion_ids");
+
+    try {
+        const response = await fetch("/items/", {
+            method: "POST",
+            body: raw
+        });
+
+        if (response.ok) {
+            alert("Item creado exitosamente.");
+            form.reset();
+            ocultarFormCrear();
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert("Error al crear el item: " + JSON.stringify(error.detail));
+        }
+    } catch (err) {
+        alert("Error de conexión o inesperado: " + err);
+    }
+});
+
+//
+// -----------------------------------------
+// 🟦 EDITAR ITEM (también listas correctas)
+// -----------------------------------------
+document.getElementById("editar-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const raw = new FormData(e.target);
+    const itemId = raw.get("item_id");
+    raw.delete("item_id");
+
+    function addList(fieldName) {
+        const value = raw.get(fieldName)?.trim() || "";
+        raw.delete(fieldName);
+        if (value !== "") {
+            value.split(",").map(x => x.trim()).forEach(v => raw.append(fieldName, v));
+        }
+    }
+
+    addList("categoria_ids");
+    addList("ubicacion_ids");
+    addList("interaccion_ids");
+
+    const response = await fetch(`/items/${itemId}`, {
+        method: "PUT",
+        body: raw
+    });
+
+    if (response.ok) {
+        alert("Ítem actualizado.");
+        ocultarFormEditar();
+        location.reload();
+    } else {
+        const error = await response.json();
+        alert("Error al editar: " + JSON.stringify(error.detail));
+    }
+});
+
+
+// Eliminar item
 async function eliminarItem(id) {
     const confirmar = confirm("¿Seguro que deseas eliminar este ítem?");
     if (!confirmar) return;
 
     const response = await fetch(`/items/${id}`, { method: "DELETE" });
 
-    if(response.ok) {
+    if (response.ok) {
         alert("Ítem eliminado exitosamente.");
         location.reload();
     } else {

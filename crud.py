@@ -1,5 +1,5 @@
 from sqlmodel import Session, select
-from models import Item, Categoria, Ubicacion, Interaccion, ItemLocationLink, ItemInteraccionLink
+from models import Item, Categoria, Ubicacion, Interaccion, ItemLocationLink, ItemInteraccionLink, ItemCategoriaLink
 from schemas import ItemCreate, ItemUpdate
 from typing import List, Optional
 
@@ -279,12 +279,17 @@ def crear_item(session: Session, data: ItemCreate, imagen_url: str | None = None
         descripcion=data.descripcion,
         costo=data.costo,
         indispensable=data.indispensable,
-        categoria_id=data.categoria_id,
+    #  categoria_id=data.categoria_id,
         imagen_url = imagen_url
     )
     session.add(item)
     session.commit()
     session.refresh(item)
+
+    # asociar categorías usando link table
+    for cid in data.categoria_ids:
+        if session.get(Categoria, cid):
+            session.add(ItemCategoriaLink(item_id=item.id, categoria_id=cid))
 
     # asociar ubicaciones
     for uid in data.ubicacion_ids:
@@ -305,6 +310,7 @@ def listar_items(session: Session):
         select(Item)
         .where(Item.activo == True)  # ✅ solo activos
         .options(
+            selectinload(Item.categorias),
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
@@ -319,8 +325,8 @@ def listar_items(session: Session):
             "descripcion": it.descripcion,
             "costo": it.costo,
             "indispensable": it.indispensable,
-            "categoria_id": it.categoria_id,
             "imagen_url": it.imagen_url,
+            "categoria_ids": [c.id for c in it.categorias],
             "ubicacion_ids": [u.id for u in it.ubicaciones],
             "interaccion_ids": [i.id for i in it.interacciones]
         })
@@ -332,7 +338,8 @@ def get_item(session: Session, item_id: int):
         select(Item)
         .where(Item.id == item_id, Item.activo == True)
         .options(
-            selectinload(Item.ubicaciones),
+            selectinload(Item.categorias),
+    selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
     ).first()
@@ -344,8 +351,8 @@ def get_item(session: Session, item_id: int):
         "descripcion": item.descripcion,
         "costo": item.costo,
         "indispensable": item.indispensable,
-        "categoria_id": item.categoria_id,
         "imagen_url": item.imagen_url,
+        "categoria_ids": [c.id for c in item.categorias],
         "ubicacion_ids": [u.id for u in item.ubicaciones],
         "interaccion_ids": [i.id for i in item.interacciones]
     }
@@ -380,8 +387,6 @@ def update_item(
     if data.indispensable is not None:
         item.indispensable = data.indispensable
 
-    if data.categoria_id is not None:
-        item.categoria_id = data.categoria_id
 
     # ------------------------
     # MANEJO ESPECIAL DE IMAGEN
@@ -402,6 +407,12 @@ def update_item(
     # ------------------------
     # RELACIONES MUCHOS-A-MUCHOS
     # ------------------------
+    # Categorías
+    if data.categoria_ids is not None:
+        session.query(ItemCategoriaLink).filter(ItemCategoriaLink.item_id == item.id).delete()
+        for cid in data.categoria_ids:
+            if session.get(Categoria, cid):
+                session.add(ItemCategoriaLink(item_id=item.id, categoria_id=cid))
 
     # Ubicaciones
     if data.ubicacion_ids is not None:
@@ -453,7 +464,7 @@ def listar_items_eliminados(session: Session):
             "descripcion": it.descripcion,
             "costo": it.costo,
             "indispensable": it.indispensable,
-            "categoria_id": it.categoria_id,
+            "categoria_ids": [c.id for c in it.categorias],
             "imagen_url": it.imagen_url,
         }
         for it in items
@@ -469,30 +480,31 @@ def buscar_items(
 ) -> List[dict]:
     # Cargar relaciones many-to-many eficientemente
     query = select(Item).options(
+        selectinload(Item.categorias),
         selectinload(Item.ubicaciones),
         selectinload(Item.interacciones)
     )
 
     # Filtros básicos
-    if categoria_id is not None:
-        query = query.where(Item.categoria_id == categoria_id)
-
-    if indispensable is not None:
-        query = query.where(Item.indispensable == indispensable)
-
-    if nombre is not None:
-        query = query.where(Item.nombre.ilike(f"%{nombre}%"))
-
     items = session.exec(query).all()
 
-    # Filtro por ubicación (más claro y directo)
-    if ubicacion_id is not None:
-        items = [
-            it for it in items
-            if any(u.id == ubicacion_id for u in it.ubicaciones)
-        ]
+    # Filtrado por categoría
+    if categoria_id is not None:
+        items = [it for it in items if any(c.id == categoria_id for c in it.categorias)]
 
-    # Convertir los resultados en un formato amigable para FastAPI
+    # Filtrado por indispensable
+    if indispensable is not None:
+        items = [it for it in items if it.indispensable == indispensable]
+
+    # Filtrado por nombre
+    if nombre is not None:
+        items = [it for it in items if nombre.lower() in it.nombre.lower()]
+
+    # Filtrado por ubicación
+    if ubicacion_id is not None:
+        items = [it for it in items if any(u.id == ubicacion_id for u in it.ubicaciones)]
+
+    # Convertir los resultados en un formato amigable
     results = []
     for it in items:
         results.append({
@@ -501,13 +513,14 @@ def buscar_items(
             "descripcion": it.descripcion,
             "costo": it.costo,
             "indispensable": it.indispensable,
-            "categoria_id": it.categoria_id,
+            "categoria_ids": [c.id for c in it.categorias],  # <-- cambio aplicado
             "imagen_url": it.imagen_url,
             "ubicacion_ids": [u.id for u in it.ubicaciones],
             "interaccion_ids": [i.id for i in it.interacciones],
         })
 
     return results
+
 
 from sqlalchemy.orm import selectinload
 from sqlmodel import select
@@ -518,7 +531,7 @@ def get_item_detallado(session: Session, item_id: int):
         select(Item)
         .where(Item.id == item_id)
         .options(
-            selectinload(Item.categoria),
+            selectinload(Item.categorias),
             selectinload(Item.ubicaciones),
             selectinload(Item.interacciones)
         )
@@ -535,14 +548,16 @@ def get_item_detallado(session: Session, item_id: int):
         "descripcion": item.descripcion,
         "costo": item.costo,
         "indispensable": item.indispensable,
-        "categoria_id": item.categoria_id,
         "imagen_url": item.imagen_url,
-        "categoria": {
-            "id": item.categoria.id if item.categoria else None,
-            "nombre": item.categoria.nombre if item.categoria else None,
-            "descripcion": item.categoria.descripcion if item.categoria else None,
-            "imagen_url": item.categoria.imagen_url if item.categoria else None
-        } if item.categoria else None,
+        "categorias": [
+            {
+                "id": c.id,
+                "nombre": c.nombre,
+                "descripcion": c.descripcion,
+                "imagen_url": c.imagen_url
+            }
+            for c in item.categorias
+        ],
         "ubicaciones": [
             {"id": u.id, "nombre": u.nombre, "tipo": u.tipo, "descripcion": u.descripcion, "imagen_url": u.imagen_url }
             for u in item.ubicaciones
@@ -552,4 +567,3 @@ def get_item_detallado(session: Session, item_id: int):
             for i in item.interacciones
         ]
     }
-

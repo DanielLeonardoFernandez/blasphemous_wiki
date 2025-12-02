@@ -19,7 +19,7 @@
 
                 <div class="card-body">
                     <h5 class="card-title">{{ categoria.nombre }}</h5>
-                    <p class="card-text">{{ categoria.descripcion }}</p>
+                    <p class="card-text">{{ categoria.descripcion or "Sin descripción" }}</p>
                     <p><strong>ID:</strong> {{ categoria.id }}</p>
 
                     <button class="btn btn-success btn-sm" onclick="restaurarCategoria({{ categoria.id }})">
@@ -44,7 +44,7 @@ async function restaurarCategoria(id) {
 
     if (response.ok) {
         alert("Categoría restaurada exitosamente.");
-        location.reload(); // recarga para actualizar la lista
+        location.reload();
     } else {
         const error = await response.json();
         alert("Error al restaurar la categoría: " + (error.detail || "Desconocido"));

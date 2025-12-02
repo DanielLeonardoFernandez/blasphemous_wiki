@@ -23,8 +23,8 @@ async def crear_item(
     nombre: str = Form(...),
     descripcion: str = Form(None),
     costo: float | None = Form(None),
-    indispensable: bool = Form(...),
-    categoria_id: int = Form(...),
+    indispensable: bool = Form(False),
+    categoria_ids: list[int] = Form([]),
     ubicacion_ids: list[int] = Form([]),
     interaccion_ids: list[int] = Form([]),
     imagen: UploadFile | None = File(None),
@@ -43,7 +43,7 @@ async def crear_item(
         descripcion=descripcion,
         costo=costo,
         indispensable=indispensable,
-        categoria_id=categoria_id,
+        categoria_ids=categoria_ids,
         ubicacion_ids=ubicacion_ids,
         interaccion_ids=interaccion_ids
     )
@@ -94,7 +94,7 @@ def listar_items_eliminados(request: Request, session: Session = Depends(get_ses
         "request": request,
         "items": items
     })
-
+"""
 # ---------------------------
 # SEARCH / FILTER
 # ---------------------------
@@ -113,7 +113,54 @@ def buscar_items(
         indispensable=indispensable,
         nombre=nombre,
     )
+"""
 
+
+@router.get("/search", response_class=HTMLResponse)
+def buscar_items_html(
+        request: Request,
+        categoria_id: Optional[str] = Query(default=None),
+        ubicacion_id: Optional[str] = Query(default=None),
+        indispensable: Optional[str] = Query(default=None),
+        nombre: Optional[str] = Query(default=None),
+        session: Session = Depends(get_session)
+):
+    # Convertir strings vacíos a tipos correctos
+    categoria_id_int = int(categoria_id) if categoria_id else None
+    ubicacion_id_int = int(ubicacion_id) if ubicacion_id else None
+
+    if indispensable == "true":
+        indispensable_bool = True
+    elif indispensable == "false":
+        indispensable_bool = False
+    else:
+        indispensable_bool = None
+
+    items = crud.buscar_items(
+        session,
+        ubicacion_id=ubicacion_id_int,
+        indispensable=indispensable_bool,
+        nombre=nombre,
+    )
+
+    # Filtrado por categoría si se indicó
+    if categoria_id_int is not None:
+        items = [
+            it for it in items
+            if any(c.id == categoria_id_int for c in getattr(it, "categorias", []))
+        ]
+
+    return templates.TemplateResponse(
+        "items/items.html",
+        {
+            "request": request,
+            "items": items,
+            "categoria_id": categoria_id,
+            "ubicacion_id": ubicacion_id,
+            "indispensable": indispensable,
+            "nombre": nombre
+        }
+    )
 
 # ---------------------------
 # READ ONE (DETALLADO)
@@ -171,8 +218,8 @@ async def actualizar_item(
     nombre: str = Form(None),
     descripcion: str = Form(None),
     costo: float | None = Form(None),
-    indispensable: bool = Form(None),
-    categoria_id: int = Form(None),
+    indispensable: bool = Form(False),
+    categoria_ids: list[int] | None = Form(None),
     ubicacion_ids: list[int] | None = Form(None),
     interaccion_ids: list[int] | None = Form(None),
     imagen: UploadFile | None = File(None),
@@ -200,7 +247,7 @@ async def actualizar_item(
         descripcion=descripcion,
         costo=costo,
         indispensable=indispensable,
-        categoria_id=categoria_id,
+        categoria_ids=categoria_ids,  # <-- lista
         ubicacion_ids=ubicacion_ids,
         interaccion_ids=interaccion_ids
     )
@@ -211,6 +258,7 @@ async def actualizar_item(
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
 
     return item
+
 
 
 # ---------------------------

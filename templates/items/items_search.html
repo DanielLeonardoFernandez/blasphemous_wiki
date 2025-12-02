@@ -1,0 +1,63 @@
+<!-- items_search.html -->
+<nav class="navbar navbar-expand-lg bg-light mb-3">
+  <div class="container-fluid">
+    <a class="navbar-brand" href="#">Busqueda Items</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSearch" aria-controls="navbarSearch" aria-expanded="false" aria-label="Toggle navigation">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="navbarSearch">
+      <!-- Formulario de búsqueda que apunta al endpoint /items/search -->
+      <form class="d-flex w-100 align-items-end" role="search" method="get" action="/items/search">
+        <div class="me-2">
+          <label class="form-label mb-0">Nombre</label>
+          <input
+            class="form-control"
+            type="search"
+            name="nombre"
+            placeholder="Buscar item por nombre"
+            aria-label="Buscar"
+            value="{{ nombre or '' }}"
+          />
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-0">Categoría</label>
+          <input
+              class="form-control"
+              type="text"
+              name="categoria_ids"
+              placeholder="IDs Categorías (separados por coma)"
+              value="{{ categoria_ids|join(',') if categoria_ids else '' }}"
+            />
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-0">Ubicación</label>
+          <input
+            class="form-control"
+            type="number"
+            name="ubicacion_id"
+            placeholder="ID Ubicación"
+            value="{{ ubicacion_id or '' }}"
+            min="0"
+            step="1"
+          />
+        </div>
+
+        <div class="me-2">
+          <label class="form-label mb-0">Indispensable</label>
+          <select class="form-select" name="indispensable">
+            <option value="">Cualquiera</option>
+            <option value="true" {% if indispensable == True %}selected{% endif %}>Sí</option>
+            <option value="false" {% if indispensable == False %}selected{% endif %}>No</option>
+          </select>
+        </div>
+
+        <div class="me-2">
+          <button class="btn btn-outline-success" type="submit">Buscar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</nav>

@@ -22,7 +22,7 @@
                     <p class="card-text">{{ item.descripcion or "Sin descripción" }}</p>
                     <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
                     <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-                    <p><strong>Categoría ID:</strong> {{ item.categoria_id or "No asignada" }}</p>
+                    <p><strong>Categorías:</strong> {% for c in item.categorias %}{{ c.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
                     <p><strong>Ubicaciones:</strong> {% for u in item.ubicaciones %}{{ u.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
                     <p><strong>Interacciones:</strong> {% for i in item.interacciones %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
                     <p><strong>ID:</strong> {{ item.id }}</p>

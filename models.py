@@ -17,20 +17,16 @@ class ItemInteraccionLink(SQLModel, table=True):
     item_id: Optional[int] = Field(default=None, foreign_key="item.id", primary_key=True)
     interaccion_id: Optional[int] = Field(default=None, foreign_key="interaccion.id", primary_key=True)
 
+class ItemCategoriaLink(SQLModel, table=True):
+    item_id: Optional[int] = Field(default=None, foreign_key="item.id", primary_key=True)
+    categoria_id: Optional[int] = Field(default=None, foreign_key="categoria.id", primary_key=True)
+
+
 
 # --- Modelos principales ---
-class Categoria(SQLModel, table=True):
-    id: Optional[int] = Field(default=None, primary_key=True)
-    nombre: str
-    descripcion: Optional[str] = None
-    activo: bool = Field(default=True)
-
-    # Imagen asociada opcional
-    imagen_url: Optional[str] = None
-
-    items: List["Item"] = Relationship(back_populates="categoria")
 
 
+"""
 class Item(SQLModel, table=True):
     id: Optional[int] = Field(default=None, primary_key=True)
     nombre: str
@@ -53,6 +49,48 @@ class Item(SQLModel, table=True):
         back_populates="items",
         link_model=ItemInteraccionLink
     )
+"""
+class Item(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    descripcion: Optional[str] = None
+    costo: Optional[int] = None
+    indispensable: bool = False
+    activo: bool = Field(default=True)
+
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
+
+    categorias: List["Categoria"] = Relationship(
+        back_populates="items",
+        link_model=ItemCategoriaLink
+    )
+
+    ubicaciones: List["Ubicacion"] = Relationship(
+        back_populates="items",
+        link_model=ItemLocationLink
+    )
+    interacciones: List["Interaccion"] = Relationship(
+        back_populates="items",
+        link_model=ItemInteraccionLink
+    )
+
+
+class Categoria(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    nombre: str
+    descripcion: Optional[str] = None
+    activo: bool = Field(default=True)
+
+    # Imagen asociada opcional
+    imagen_url: Optional[str] = None
+
+    items: List[Item] = Relationship(
+        back_populates="categorias",
+        link_model=ItemCategoriaLink
+    )
+
+    #items: List["Item"] = Relationship(back_populates="categoria")
 
 
 class Ubicacion(SQLModel, table=True):

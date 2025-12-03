@@ -1,10 +1,6 @@
 /* ====== FONDO GENERAL ====== */
 body {
-    background-image: url("https://i.pinimg.com/736x/31/14/1d/31141d2c4307155b78581ea612750542.jpg");
-    background-size: cover;
-    background-position: center;
-    background-attachment: fixed;
-    background-repeat: no-repeat;
+    background-color: #000000;  /* fondo negro */
 
     font-family: Arial, sans-serif;
     color: #f2f2f2;   /* Para textos claros sobre fondo oscuro */
@@ -116,8 +112,8 @@ img {
 }
 
 .nav-icon {
-    width: 300px;               /* tamaño uniforme */
-    height: 300px;
+    width: 150px;               /* tamaño uniforme */
+    height: 150px;
     object-fit: contain;
     transition: transform 0.2s ease;
 }

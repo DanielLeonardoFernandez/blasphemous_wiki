@@ -112,8 +112,8 @@ img {
 }
 
 .nav-icon {
-    width: 150px;               /* tamaño uniforme */
-    height: 150px;
+    width: 200px;               /* tamaño uniforme */
+    height: 200px;
     object-fit: contain;
     transition: transform 0.2s ease;
 }
@@ -121,4 +121,99 @@ img {
 /* efecto hover */
 .navbar-icons .nav-link:hover .nav-icon {
     transform: scale(1.15);
+}
+/* Fuente medieval para el brand del navbar */
+.navbar-brand {
+    font-family: 'Cinzel', serif;
+    font-weight: 700;   /* opcional: más destacado */
+    font-size: 1.75rem; /* ajusta tamaño según prefieras */
+}
+/* ====== CARDS PERSONALIZADAS ====== */
+.card {
+    background-color: #1a1a1a; /* color de fondo oscuro */
+    color: #f2f2f2;            /* texto claro */
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    padding: 15px;
+    transition: transform 0.2s ease;
+}
+
+/* Hover opcional para darle efecto */
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+}
+
+/* Imagen dentro de la card */
+.card img {
+    width: 100%;          /* ocupa todo el ancho de la card */
+    height: 200px;        /* altura fija de la card */
+    object-fit: contain;  /* mantiene proporción y muestra toda la imagen */
+    background-color: #1a1a1a; /* opcional: fondo negro si hay espacio vacío */
+    border-radius: 10px 10px 0 0;
+}
+
+/* Títulos y textos dentro de la card */
+.card-title {
+    font-family: 'Cinzel', serif; /* tipografía medieval si quieres */
+    font-weight: 700;
+}
+
+.card-text {
+    font-size: 0.95rem;
+}
+/* ====== BARRA DE BÚSQUEDA ITEMS MEDIEVAL ====== */
+.navbar.bg-light {
+    background-color: #330000 !important;  /* rojo oscuro profundo */
+    padding: 12px 20px;
+    border-radius: 10px;                   /* bordes suavizados */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5); /* sombra para efecto 3D */
+    font-family: 'Cinzel', serif;          /* tipografía medieval */
+}
+
+/* Inputs de búsqueda */
+.navbar .form-control {
+    background-color: #660000;  /* rojo oscuro más claro */
+    color: #f2f2f2;             /* texto claro */
+    border: 2px solid #990000;  /* borde acotado y contrastante */
+    border-radius: 5px;
+    padding: 6px 10px;
+    font-family: 'Cinzel', serif;
+}
+
+.navbar .form-control::placeholder {
+    color: #ffcccc;  /* placeholder más suave */
+    opacity: 0.8;
+}
+
+/* Select de indispensable */
+.navbar .form-select {
+    background-color: #660000;
+    color: #f2f2f2;
+    border: 2px solid #990000;
+    border-radius: 5px;
+    font-family: 'Cinzel', serif;
+}
+
+/* Botón buscar */
+.navbar .btn-outline-success {
+    border-color: #ff6666;
+    color: #ff6666;
+    font-weight: bold;
+    font-family: 'Cinzel', serif;
+    transition: all 0.2s ease;
+}
+
+.navbar .btn-outline-success:hover {
+    background-color: #990000;
+    border-color: #ff3333;
+    color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+}
+
+/* Etiquetas de los inputs */
+.navbar .form-label {
+    color: #f2f2f2;
+    font-weight: bold;
+    font-family: 'Cinzel', serif;
 }

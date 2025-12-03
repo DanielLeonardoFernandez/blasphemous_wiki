@@ -66,38 +66,36 @@
     <div class="row">
     {% for categoria in categorias %}
         <div class="col-md-4 mb-4">
-            <div class="card">
 
-                {% if categoria.imagen_url %}
-                    <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
-                {% else %}
-                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
-                {% endif %}
+            <!-- Card clickeable completa -->
+            <a href="/categorias/id/{{ categoria.id }}" style="text-decoration: none; color: inherit;">
+                <div class="card">
+                    {% if categoria.imagen_url %}
+                        <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                    {% endif %}
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ categoria.nombre }}</h5>
-                    <p class="card-text">{{ categoria.descripcion }}</p>
-                    <p><strong>ID:</strong> {{ categoria.id }}</p>
-
-                    <div class="d-flex justify-content-between">
-                        <!-- Editar con fetch -->
-                        <button class="btn btn-primary btn-sm"
-                            onclick='mostrarFormEditar({{ categoria.id }}, "{{ categoria.nombre|escape }}", "{{ categoria.descripcion|escape }}")'>
-                            Editar
-                        </button>
-
-                        <!-- Eliminar REAL con fetch DELETE -->
-                        <button class="btn btn-danger btn-sm" onclick="eliminarCategoria({{ categoria.id }})">
-                            Eliminar
-                        </button>
-                    </div>
-
-                    <!-- Ver detalles usando tu endpoint GET /categorias/id/{id} -->
-                    <div class="mt-2">
-                        <a href="/categorias/id/{{ categoria.id }}" class="btn btn-outline-info btn-sm">Ver</a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ categoria.nombre }}</h5>
+                        <p class="card-text">{{ categoria.descripcion }}</p>
+                        <p><strong>ID:</strong> {{ categoria.id }}</p>
                     </div>
                 </div>
+            </a>
+
+            <!-- Botones fuera del enlace para evitar navegación -->
+            <div class="mt-2 d-flex justify-content-between">
+                <button class="btn btn-primary btn-sm"
+                    onclick='mostrarFormEditar({{ categoria.id }}, "{{ categoria.nombre|escape }}", "{{ categoria.descripcion|escape }}")'>
+                    Editar
+                </button>
+
+                <button class="btn btn-danger btn-sm" onclick="eliminarCategoria({{ categoria.id }})">
+                    Eliminar
+                </button>
             </div>
+
         </div>
     {% endfor %}
     </div>
@@ -105,6 +103,7 @@
 {% else %}
     <p>No hay categorías activas.</p>
 {% endif %}
+
 
 <script>
 // Mostrar / ocultar formulario crear

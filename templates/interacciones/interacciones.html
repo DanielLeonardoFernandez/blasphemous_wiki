@@ -73,35 +73,37 @@
     <div class="row">
     {% for interaccion in interacciones %}
         <div class="col-md-4 mb-4">
-            <div class="card">
 
-                {% if interaccion.imagen_url %}
-                    <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
-                {% else %}
-                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
-                {% endif %}
+            <a href="/interacciones/id/{{ interaccion.id }}" style="text-decoration: none; color: inherit;">
+                <div class="card">
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ interaccion.nombre }}</h5>
-                    <p class="card-text"><strong>Tipo:</strong> {{ interaccion.tipo }}</p>
-                    <p class="card-text">{{ interaccion.descripcion }}</p>
-                    <p><strong>ID:</strong> {{ interaccion.id }}</p>
+                    {% if interaccion.imagen_url %}
+                        <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                    {% endif %}
 
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-primary btn-sm"
-                            onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
-                            Editar
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
-                            Eliminar
-                        </button>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ interaccion.nombre }}</h5>
+                        <p class="card-text"><strong>Tipo:</strong> {{ interaccion.tipo }}</p>
+                        <p class="card-text">{{ interaccion.descripcion }}</p>
+                        <p><strong>ID:</strong> {{ interaccion.id }}</p>
                     </div>
 
-                    <div class="mt-2">
-                        <a href="/interacciones/id/{{ interaccion.id }}" class="btn btn-outline-info btn-sm">Ver</a>
-                    </div>
                 </div>
+            </a>
+
+            <div class="mt-2 d-flex justify-content-between">
+                <button class="btn btn-primary btn-sm"
+                    onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
+                    Editar
+                </button>
+
+                <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
+                    Eliminar
+                </button>
             </div>
+
         </div>
     {% endfor %}
     </div>

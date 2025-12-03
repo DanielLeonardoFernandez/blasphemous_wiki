@@ -116,79 +116,88 @@
 <div class="row">
     {% for item in items %}
         <div class="col-md-4 mb-4">
-            <div class="card">
-                {% if item.imagen_url %}
-                    <img src="{{ item.imagen_url }}" class="card-img-top" alt="{{ item.nombre }}">
-                {% else %}
-                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
-                {% endif %}
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ item.nombre }}</h5>
-                    <p class="card-text">{{ item.descripcion }}</p>
-                    <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
-                    <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-                    <p><strong>Categorías:</strong>
-                        {% if item.categoria_ids %}
-                            {% for cid in item.categoria_ids %}
-                                {{ cid }}{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            Ninguna
-                        {% endif %}
-                    </p>
+            <!-- Toda la card ahora es un enlace -->
+            <a href="/items/{{ item.id }}/detalles" style="text-decoration: none; color: inherit;">
+                <div class="card">
 
-                    <p><strong>Ubicaciones:</strong>
-                        {% if item.ubicacion_ids %}
-                            {% for uid in item.ubicacion_ids %}
-                                {{ uid }}{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            Ninguna
-                        {% endif %}
-                    </p>
+                    {% if item.imagen_url %}
+                        <img src="{{ item.imagen_url }}" class="card-img-top" alt="{{ item.nombre }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                    {% endif %}
 
-                    <p><strong>Interacciones:</strong>
-                        {% if item.interaccion_ids %}
-                            {% for iid in item.interaccion_ids %}
-                                {{ iid }}{% if not loop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            Ninguna
-                        {% endif %}
-                    </p>
-                    <p><strong>ID:</strong> {{ item.id }}</p>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ item.nombre }}</h5>
+                        <p class="card-text">{{ item.descripcion }}</p>
 
-                    <div class="d-flex justify-content-between">
-                        <button class="btn btn-primary btn-sm"
-                            onclick='mostrarFormEditar(
-                                {{ item.id }},
-                                "{{ item.nombre|escape }}",
-                                "{{ item.descripcion|escape }}",
-                                "{{ item.costo or "" }}",
-                                {{ "true" if item.indispensable else "false" }},
-                                "{{ item.categorias|map(attribute="id")|join(",") }}",
-                                "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
-                                "{{ item.interacciones|map(attribute="id")|join(",") }}"
-                            )'>
-                            Editar
-                        </button>
-                        <button class="btn btn-danger btn-sm" onclick="eliminarItem({{ item.id }})">
-                            Eliminar
-                        </button>
+                        <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
+                        <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
+
+                        <p><strong>Categorías:</strong>
+                            {% if item.categoria_ids %}
+                                {% for cid in item.categoria_ids %}
+                                    {{ cid }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Ninguna
+                            {% endif %}
+                        </p>
+
+                        <p><strong>Ubicaciones:</strong>
+                            {% if item.ubicacion_ids %}
+                                {% for uid in item.ubicacion_ids %}
+                                    {{ uid }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Ninguna
+                            {% endif %}
+                        </p>
+
+                        <p><strong>Interacciones:</strong>
+                            {% if item.interaccion_ids %}
+                                {% for iid in item.interaccion_ids %}
+                                    {{ iid }}{% if not loop.last %}, {% endif %}
+                                {% endfor %}
+                            {% else %}
+                                Ninguna
+                            {% endif %}
+                        </p>
+
+                        <p><strong>ID:</strong> {{ item.id }}</p>
                     </div>
 
-                    <div class="mt-2">
-                        <a href="/items/{{ item.id }}/detalles" class="btn btn-outline-info btn-sm">Ver</a>
-                    </div>
                 </div>
+            </a>
+
+            <!-- Botones fuera del <a> -->
+            <div class="mt-2 d-flex justify-content-between">
+                <button class="btn btn-primary btn-sm"
+                    onclick='mostrarFormEditar(
+                        {{ item.id }},
+                        "{{ item.nombre|escape }}",
+                        "{{ item.descripcion|escape }}",
+                        "{{ item.costo or "" }}",
+                        {{ "true" if item.indispensable else "false" }},
+                        "{{ item.categorias|map(attribute="id")|join(",") }}",
+                        "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
+                        "{{ item.interacciones|map(attribute="id")|join(",") }}"
+                    )'>
+                    Editar
+                </button>
+
+                <button class="btn btn-danger btn-sm" onclick="eliminarItem({{ item.id }})">
+                    Eliminar
+                </button>
             </div>
+
         </div>
     {% endfor %}
 </div>
 {% else %}
 <p>No hay items activos.</p>
 {% endif %}
+
 
 <script>
 // Mostrar / ocultar formulario crear

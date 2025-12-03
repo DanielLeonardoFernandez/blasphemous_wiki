@@ -76,39 +76,37 @@
     <div class="row">
     {% for ubicacion in ubicaciones %}
         <div class="col-md-4 mb-4">
-            <div class="card">
 
-                {% if ubicacion.imagen_url %}
-                    <img src="{{ ubicacion.imagen_url }}" class="card-img-top" alt="{{ ubicacion.nombre }}">
-                {% else %}
-                    <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
-                {% endif %}
+            <!-- Envolvemos la card en <a> para que toda la card sea clickeable -->
+            <a href="/ubicaciones/id/{{ ubicacion.id }}" style="text-decoration: none; color: inherit;">
+                <div class="card">
+                    {% if ubicacion.imagen_url %}
+                        <img src="{{ ubicacion.imagen_url }}" class="card-img-top" alt="{{ ubicacion.nombre }}">
+                    {% else %}
+                        <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+                    {% endif %}
 
-                <div class="card-body">
-                    <h5 class="card-title">{{ ubicacion.nombre }}</h5>
-                    <p class="card-text"><strong>Tipo:</strong> {{ ubicacion.tipo }}</p>
-                    <p class="card-text">{{ ubicacion.descripcion }}</p>
-                    <p><strong>ID:</strong> {{ ubicacion.id }}</p>
-
-                    <div class="d-flex justify-content-between">
-                        <!-- Editar con fetch -->
-                        <button class="btn btn-primary btn-sm"
-                            onclick='mostrarFormEditar({{ ubicacion.id }}, "{{ ubicacion.nombre|escape }}", "{{ ubicacion.tipo|escape }}", "{{ ubicacion.descripcion|escape }}")'>
-                            Editar
-                        </button>
-
-                        <!-- Eliminar REAL con fetch DELETE -->
-                        <button class="btn btn-danger btn-sm" onclick="eliminarUbicacion({{ ubicacion.id }})">
-                            Eliminar
-                        </button>
-                    </div>
-
-                    <!-- Ver detalles usando tu endpoint GET /ubicaciones/id/{id} -->
-                    <div class="mt-2">
-                        <a href="/ubicaciones/id/{{ ubicacion.id }}" class="btn btn-outline-info btn-sm">Ver</a>
+                    <div class="card-body">
+                        <h5 class="card-title">{{ ubicacion.nombre }}</h5>
+                        <p class="card-text"><strong>Tipo:</strong> {{ ubicacion.tipo }}</p>
+                        <p class="card-text">{{ ubicacion.descripcion }}</p>
+                        <p><strong>ID:</strong> {{ ubicacion.id }}</p>
                     </div>
                 </div>
+            </a>
+
+            <!-- Botones fuera del enlace -->
+            <div class="mt-2 d-flex justify-content-between">
+                <button class="btn btn-primary btn-sm"
+                    onclick='mostrarFormEditar({{ ubicacion.id }}, "{{ ubicacion.nombre|escape }}", "{{ ubicacion.tipo|escape }}", "{{ ubicacion.descripcion|escape }}")'>
+                    Editar
+                </button>
+
+                <button class="btn btn-danger btn-sm" onclick="eliminarUbicacion({{ ubicacion.id }})">
+                    Eliminar
+                </button>
             </div>
+
         </div>
     {% endfor %}
     </div>
@@ -116,6 +114,7 @@
 {% else %}
     <p>No hay ubicaciones activas.</p>
 {% endif %}
+
 
 <script>
 // Mostrar / ocultar formulario crear

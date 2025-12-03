@@ -96,3 +96,33 @@ body {
 img {
     border-radius: 10px;
 }
+
+/* ====== ICONOS DE LA PÁGINA PRINCIPAL ====== */
+.navbar-icons {
+    display: flex;             /* pone los <li> en línea */
+    justify-content: center;   /* centra horizontalmente */
+    gap: 25px;                 /* separación entre iconos */
+    padding: 0;
+    margin: 20px 0;
+    list-style: none;          /* quita bullets */
+}
+
+.navbar-icons .nav-item {
+    display: inline-block;
+}
+
+.navbar-icons .nav-link {
+    display: inline-block;
+}
+
+.nav-icon {
+    width: 300px;               /* tamaño uniforme */
+    height: 300px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+/* efecto hover */
+.navbar-icons .nav-link:hover .nav-icon {
+    transform: scale(1.15);
+}

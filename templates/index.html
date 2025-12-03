@@ -16,13 +16,30 @@
 <p class="texto-centro">Explora cada sección para encontrar información detallada:</p>
 
 <div class="menu-centro">
-    <ul>
-        <li><a href="/categorias">Categorías</a></li>
-        <li><a href="/ubicaciones">Ubicaciones</a></li>
-        <li><a href="/interacciones">Interacciones</a></li>
-        <li><a href="/items">Ítems</a></li>
+    <ul class="navbar-icons">
+        <li class="nav-item">
+          <a class="nav-link" href="/categorias" aria-label="Categorías">
+            <img src="{{ url_for('static', path='img/icon-categorias.png') }}" alt="Categorías" class="nav-icon">
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/ubicaciones" aria-label="Ubicaciones">
+            <img src="{{ url_for('static', path='img/icon-ubicaciones.png') }}" alt="Ubicaciones" class="nav-icon">
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/interacciones" aria-label="Interacciones">
+            <img src="{{ url_for('static', path='img/icon-interacciones.png') }}" alt="Interacciones" class="nav-icon">
+          </a>
+        </li>
+        <li class="nav-item">
+          <a class="nav-link" href="/items" aria-label="Ítems">
+            <img src="{{ url_for('static', path='img/icon-items.png') }}" alt="Ítems" class="nav-icon">
+          </a>
+        </li>
     </ul>
 </div>
+
 
 <div class="imagen-abajo">
     <img width="300"

@@ -164,15 +164,27 @@ def buscar_items_html(
 
 # ---------------------------
 # READ ONE (DETALLADO)
-# 🔹 Importante: antes de /{item_id}
 # ---------------------------
-@router.get("/{item_id}/detalles", response_model=ItemReadFull)
-def obtener_item_detallado(item_id: int, session: Session = Depends(get_session)):
+@router.get("/{item_id}/detalles", response_class=HTMLResponse)
+def obtener_item_detallado_html(item_id: int, request: Request, session: Session = Depends(get_session)):
+    item = crud.get_item_detallado(session, item_id)
+    if not item:
+        raise HTTPException(status_code=404, detail="Ítem no encontrado")
+
+    print(item)
+    return templates.TemplateResponse("items/items_detalles.html", {
+        "request": request,
+        "item": item
+    })
+"""
+
+@router.get("/{item_id}/detalles")
+def obtener_item_json(item_id: int, session: Session = Depends(get_session)):
     item = crud.get_item_detallado(session, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Ítem no encontrado")
     return item
-
+"""
 
 # ---------------------------
 # RESTAURAR (activar ítem eliminado)

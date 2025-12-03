@@ -4,17 +4,27 @@
 
 <a href="/categorias" class="btn btn-secondary mb-3">Volver a la lista</a>
 
-<div class="card mb-4" style="max-width: 600px;">
+<!-- Contenedor ancho completo -->
+<div style="width: 100%; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+
+    <!-- Imagen principal -->
     {% if categoria.imagen_url %}
-        <img src="{{ categoria.imagen_url }}" class="card-img-top" alt="{{ categoria.nombre }}">
+        <img src="{{ categoria.imagen_url }}"
+             alt="{{ categoria.nombre }}"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% else %}
-        <img src="https://via.placeholder.com/600x300?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+        <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
+             alt="Sin imagen"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% endif %}
 
-    <div class="card-body">
-        <h5 class="card-title">{{ categoria.nombre }}</h5>
-        <p class="card-text">{{ categoria.descripcion or "Sin descripción" }}</p>
-        <p><strong>ID:</strong> {{ categoria.id }}</p>
+    <h2>{{ categoria.nombre }}</h2>
+
+    <p>{{ categoria.descripcion or "Sin descripción" }}</p>
+
+    <hr>
+
+    <p><strong>ID:</strong> {{ categoria.id }}</p>
 
         <div class="d-flex justify-content-between">
             <!-- Editar -->

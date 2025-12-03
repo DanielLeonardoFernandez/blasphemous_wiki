@@ -4,18 +4,33 @@
 
 <a href="/interacciones" class="btn btn-secondary mb-3">Volver a la lista</a>
 
-<div class="card mb-4" style="max-width: 600px;">
+<!-- Contenedor completo -->
+<div style="width: 100%; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+
+    <!-- Imagen principal -->
     {% if interaccion.imagen_url %}
-        <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+        <img src="{{ interaccion.imagen_url }}"
+             alt="{{ interaccion.nombre }}"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% else %}
-        <img src="https://via.placeholder.com/600x300?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+        <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
+             alt="Sin imagen"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% endif %}
 
-    <div class="card-body">
-        <h5 class="card-title">{{ interaccion.nombre }}</h5>
-        <p><strong>Tipo:</strong> {{ interaccion.tipo or "No especificado" }}</p>
-        <p class="card-text">{{ interaccion.descripcion or "Sin descripción" }}</p>
-        <p><strong>ID:</strong> {{ interaccion.id }}</p>
+    <!-- Nombre -->
+    <h2>{{ interaccion.nombre }}</h2>
+
+    <!-- Tipo -->
+    <p><strong>Tipo:</strong> {{ interaccion.tipo or "No especificado" }}</p>
+
+    <!-- Descripción -->
+    <p>{{ interaccion.descripcion or "Sin descripción" }}</p>
+
+    <hr>
+
+    <!-- ID -->
+    <p><strong>ID:</strong> {{ interaccion.id }}</p>
 
         <div class="d-flex justify-content-between">
             <!-- Editar con fetch -->

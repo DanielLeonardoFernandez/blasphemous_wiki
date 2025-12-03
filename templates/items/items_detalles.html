@@ -4,45 +4,97 @@
 
 <a href="/items" class="btn btn-secondary mb-3">Volver a la lista</a>
 
-<div class="card mb-4" style="max-width: 600px;">
+<!-- Contenedor ancho completo -->
+<div style="width: 100%; padding: 20px; background: #f8f9fa; border-radius: 8px;">
+
+    <!-- Imagen principal -->
     {% if item.imagen_url %}
-        <img src="{{ item.imagen_url }}" class="card-img-top" alt="{{ item.nombre }}">
+        <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% else %}
-        <img src="https://via.placeholder.com/600x300?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
+        <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
+             alt="Sin imagen"
+             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% endif %}
 
-    <div class="card-body">
-        <h5 class="card-title">{{ item.nombre }}</h5>
-        <p class="card-text">{{ item.descripcion or "Sin descripción" }}</p>
-        <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
-        <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-        <p><strong>Categorías:</strong> {% for c in item.categorias %}{{ c.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
-        <p><strong>Ubicaciones:</strong> {% for u in item.ubicaciones %}{{ u.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
-        <p><strong>Interacciones:</strong> {% for i in item.interacciones %}{{ i.id }}{% if not loop.last %}, {% endif %}{% endfor %}</p>
-        <p><strong>ID:</strong> {{ item.id }}</p>
+    <h2>{{ item.nombre }}</h2>
+    <p>{{ item.descripcion or "Sin descripción" }}</p>
 
-        <div class="d-flex justify-content-between">
-            <!-- Editar con fetch -->
-            <button class="btn btn-primary btn-sm"
-                onclick='mostrarFormEditar(
-                    {{ item.id }},
-                    "{{ item.nombre|escape }}",
-                    "{{ item.descripcion|escape }}",
-                    "{{ item.costo or "" }}",
-                    {{ "true" if item.indispensable else "false" }},
-                    "{{ item.categorias|map(attribute="id")|join(",") }}",
-                    "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
-                    "{{ item.interacciones|map(attribute="id")|join(",") }}"
-                )'>
-                Editar
-            </button>
+    <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
+    <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
 
-            <!-- Eliminar REAL con fetch DELETE -->
-            <button class="btn btn-danger btn-sm" onclick="eliminarItem({{ item.id }})">
-                Eliminar
-            </button>
-        </div>
+    <hr>
+
+    <!-- Categorías -->
+    <h3>Categorías</h3>
+    {% if item.categorias %}
+        {% for c in item.categorias %}
+            <div style="margin-bottom: 10px;">
+                <strong>{{ c.nombre }}</strong><br>
+                {{ c.descripcion }}<br>
+                <img src="{{ c.imagen_url }}" style="width:60px;height:60px; border-radius:5px;">
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay categorías</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Ubicaciones -->
+    <h3>Ubicaciones</h3>
+    {% if item.ubicaciones %}
+        {% for u in item.ubicaciones %}
+            <div style="margin-bottom: 10px;">
+                <strong>{{ u.nombre }}</strong><br>
+                {{ u.descripcion }}<br>
+                <img src="{{ u.imagen_url }}" style="width:60px;height:60px; border-radius:5px;">
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay ubicaciones</p>
+    {% endif %}
+
+    <hr>
+
+    <!-- Interacciones -->
+    <h3>Interacciones</h3>
+    {% if item.interacciones %}
+        {% for i in item.interacciones %}
+            <div style="margin-bottom: 10px;">
+                <strong>{{ i.descripcion }}</strong><br>
+                <img src="{{ i.imagen_url }}" style="width:60px;height:60px; border-radius:5px;">
+            </div>
+        {% endfor %}
+    {% else %}
+        <p>No hay interacciones</p>
+    {% endif %}
+
+    <hr>
+
+    <p><strong>ID:</strong> {{ item.id }}</p>
+
+    <!-- Controles -->
+    <div class="d-flex justify-content-between mt-4">
+        <button class="btn btn-primary"
+            onclick='mostrarFormEditar(
+                {{ item.id }},
+                "{{ item.nombre|escape }}",
+                "{{ item.descripcion|escape }}",
+                "{{ item.costo or "" }}",
+                {{ "true" if item.indispensable else "false" }},
+                "{{ item.categorias|map(attribute="id")|join(",") }}",
+                "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
+                "{{ item.interacciones|map(attribute="id")|join(",") }}"
+            )'>
+            Editar
+        </button>
+
+        <button class="btn btn-danger" onclick="eliminarItem({{ item.id }})">
+            Eliminar
+        </button>
     </div>
+
 </div>
 
 <!-- FORMULARIO EDITAR (oculto inicialmente) -->
@@ -84,12 +136,12 @@
 
         <div class="mb-3">
             <label class="form-label">Ubicaciones (IDs separados por coma)</label>
-            <input type="text" name="ubicaciones" id="editar-ubicaciones" class="form-control">
+            <input type="text" name="ubicaciones_ids" id="editar-ubicaciones" class="form-control">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Interacciones (IDs separados por coma)</label>
-            <input type="text" name="interacciones" id="editar-interacciones" class="form-control">
+            <input type="text" name="interacciones_ids" id="editar-interacciones" class="form-control">
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
@@ -98,59 +150,210 @@
 </div>
 
 <script>
+// Mostrar / ocultar formulario crear
+function mostrarFormCrear() {
+    document.getElementById("form-crear").style.display = "block";
+}
+function ocultarFormCrear() {
+    document.getElementById("form-crear").style.display = "none";
+}
+
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categoria_id, ubicaciones, interacciones) {
+function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categorias, ubicaciones, interacciones) {
     document.getElementById("form-editar").style.display = "block";
     document.getElementById("item_id").value = id;
     document.getElementById("editar-nombre").value = nombre;
     document.getElementById("editar-descripcion").value = descripcion;
     document.getElementById("editar-costo").value = costo;
     document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-    document.getElementById("editar-categoria_ids").value = categoria_ids;
-    document.getElementById("editar-ubicaciones").value = ubicaciones;
-    document.getElementById("editar-interacciones").value = interacciones;
+
+    document.getElementById("editar-categoria_ids").value = categorias;
+    document.getElementById("editar-ubicacion_ids").value = ubicaciones;
+    document.getElementById("editar-interaccion_ids").value = interacciones;
 }
+
 function ocultarFormEditar() {
     document.getElementById("form-editar").style.display = "none";
     document.getElementById("editar-form").reset();
 }
 
-// Enviar PUT /items/{id} con fetch
+//-----------------------------------------
+// 🟢 CREAR ITEM (listas correctamente enviadas como números)
+//-----------------------------------------
+document.getElementById("crear-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const form = e.target;
+    const raw = new FormData(form);
+
+    // Función para procesar listas de IDs
+    function addList(fieldName) {
+        const value = raw.get(fieldName)?.trim() || "";
+        raw.delete(fieldName);
+
+        if (value !== "") {
+            value
+                .split(",")                // separar por comas
+                .map(x => x.trim())        // eliminar espacios
+                .filter(x => x !== "")     // ignorar entradas vacías
+                .forEach(v => raw.append(fieldName, Number(v))); // enviar como número
+        }
+    }
+
+    addList("categoria_ids");
+    addList("ubicacion_ids");
+    addList("interaccion_ids");
+
+    try {
+        const response = await fetch("/items/", {
+            method: "POST",
+            body: raw
+        });
+
+        if (response.ok) {
+            alert("Item creado exitosamente.");
+            form.reset();
+            ocultarFormCrear();
+            location.reload();
+        } else {
+            const error = await response.json();
+            alert("Error al crear el item: " + JSON.stringify(error.detail));
+        }
+    } catch (err) {
+        alert("Error de conexión o inesperado: " + err);
+    }
+});
+
+//
+// -----------------------------------------
+// 🟦 EDITAR ITEM (también listas correctas)
+// -----------------------------------------
 document.getElementById("editar-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-    const form = e.target;
-    const id = document.getElementById("item_id").value;
-    const formData = new FormData(form);
 
-    const response = await fetch(`/items/${id}`, {
+    const raw = new FormData(e.target);
+    const itemId = raw.get("item_id");
+    raw.delete("item_id");
+
+    function addList(fieldName) {
+        const value = raw.get(fieldName)?.trim() || "";
+        raw.delete(fieldName);
+        if (value !== "") {
+            value.split(",").map(x => x.trim()).forEach(v => raw.append(fieldName, v));
+        }
+    }
+
+    addList("categoria_ids");
+    addList("ubicacion_ids");
+    addList("interaccion_ids");
+
+    const response = await fetch(`/items/${itemId}`, {
         method: "PUT",
-        body: formData
+        body: raw
     });
 
-    if(response.ok){
-        alert("Item actualizado exitosamente.");
-        form.reset();
+    if (response.ok) {
+        alert("Ítem actualizado.");
         ocultarFormEditar();
-        location.reload(); // recarga la página de detalles
+        location.reload();
     } else {
         const error = await response.json();
-        alert("Error al actualizar el item: " + (error.detail || "Desconocido"));
+        alert("Error al editar: " + JSON.stringify(error.detail));
     }
+});
+
+// ---------------------------------------------------------
+// CARGA DE DETALLES DEL ÍTEM DESDE EL ENDPOINT REAL
+// ---------------------------------------------------------
+
+document.addEventListener('DOMContentLoaded', function () {
+    const itemId = {{ item.id }};
+
+    fetch(`/items/${itemId}/detalles`)
+        .then(response => {
+            if (!response.ok) throw new Error("No se pudo obtener detalles del ítem");
+            return response.json();
+        })
+        .then(data => {
+
+            // -------------------------
+            // Actualizar título, costo, etc.
+            // -------------------------
+            document.querySelector(".card-title").innerText =
+                data.nombre ?? "Sin nombre";
+
+            document.querySelector(".card-text").innerText =
+                data.descripcion ?? "Sin descripción";
+
+            document.getElementById("costo-detalle").innerText =
+                data.costo ?? "No especificado";
+
+            document.getElementById("indispensable-detalle").innerText =
+                data.indispensable ? "Sí" : "No";
+
+            // -------------------------
+            // Categorías
+            -------------------------
+            const categoriasContainer = document.getElementById('categorias-detalles');
+            categoriasContainer.innerHTML = "";
+
+            data.categorias.forEach(categoria => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <strong>${categoria.nombre}</strong><br>
+                    ${categoria.descripcion}<br>
+                    <img src="${categoria.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
+                `;
+                categoriasContainer.appendChild(div);
+            });
+
+            // -------------------------
+            // Ubicaciones
+            -------------------------
+            const ubicacionesContainer = document.getElementById('ubicaciones-detalles');
+            ubicacionesContainer.innerHTML = "";
+
+            data.ubicaciones.forEach(ubicacion => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <strong>${ubicacion.nombre}</strong><br>
+                    ${ubicacion.descripcion}<br>
+                    <img src="${ubicacion.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
+                `;
+                ubicacionesContainer.appendChild(div);
+            });
+
+            // -------------------------
+            // Interacciones
+            -------------------------
+            const interaccionesContainer = document.getElementById('interacciones-detalles');
+            interaccionesContainer.innerHTML = "";
+
+            data.interacciones.forEach(interaccion => {
+                const div = document.createElement('div');
+                div.innerHTML = `
+                    <strong>${interaccion.descripcion}</strong><br>
+                    <img src="${interaccion.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
+                `;
+                interaccionesContainer.appendChild(div);
+            });
+        })
+        .catch(err => console.error(err));
 });
 
 // Eliminar item
 async function eliminarItem(id) {
-    const confirmar = confirm("¿Seguro que deseas eliminar este item?");
+    const confirmar = confirm("¿Seguro que deseas eliminar este ítem?");
     if (!confirmar) return;
 
     const response = await fetch(`/items/${id}`, { method: "DELETE" });
 
-    if(response.ok) {
-        alert("Item eliminado exitosamente.");
-        window.location.href = "/items"; // vuelve a la lista
+    if (response.ok) {
+        alert("Ítem eliminado exitosamente.");
+        location.reload();
     } else {
         const error = await response.json();
-        alert("Error al eliminar el item: " + (error.detail || "Desconocido"));
+        alert("Error al eliminar el ítem: " + (error.detail || "Desconocido"));
     }
 }
 </script>

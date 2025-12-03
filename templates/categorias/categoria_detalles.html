@@ -1,4 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
+
+{% block content %}
 
 <h1>Detalles de la Categoría</h1>
 
@@ -67,7 +69,9 @@
         <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 // Mostrar / ocultar formulario editar
 function mostrarFormEditar(id, nombre, descripcion) {
@@ -121,4 +125,4 @@ async function eliminarCategoria(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

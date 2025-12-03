@@ -1,4 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
+
+{% block content %}
 
 <h1>Categorías de la Wiki de Blasphemous</h1>
 
@@ -104,7 +106,9 @@
     <p>No hay categorías activas.</p>
 {% endif %}
 
+{% endblock %}
 
+{% block scripts %}
 <script>
 // Mostrar / ocultar formulario crear
 function mostrarFormCrear() {
@@ -188,4 +192,4 @@ async function eliminarCategoria(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

@@ -1,23 +1,22 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
-<body style="margin: 0; padding: 0;">
+{% block content %}
 
-<!-- Banner totalmente pegado arriba y de lado a lado -->
-<div style="width: 100%; overflow: hidden; margin: 0; padding: 0;">
+<div class="banner-container">
     <img
         src="https://images.greenmangaming.com/b618d95362ce47cca4791d1d7a02a720/0102d7ffe9304110a59588a41fb90666.jpg"
         alt="Banner Blasphemous"
-        style="width: 100%; height: 300px; object-fit: cover; display: block; margin: 0; padding: 0;"
+        class="banner-img"
     >
 </div>
 
-<h1 style="text-align: center; margin-top: 30px;">Wiki de Blasphemous</h1>
-<p style="text-align: center;">Bienvenido a la enciclopedia no oficial del universo de Blasphemous.</p>
-<p style="text-align: center;">Explora cada sección para encontrar información detallada:</p>
+<h1 class="titulo-principal">Wiki de Blasphemous</h1>
 
-<!-- Links centrados -->
-<div style="text-align: center;">
-    <ul style="list-style: none; padding: 0;">
+<p class="texto-centro">Bienvenido a la enciclopedia no oficial del universo de Blasphemous.</p>
+<p class="texto-centro">Explora cada sección para encontrar información detallada:</p>
+
+<div class="menu-centro">
+    <ul>
         <li><a href="/categorias">Categorías</a></li>
         <li><a href="/ubicaciones">Ubicaciones</a></li>
         <li><a href="/interacciones">Interacciones</a></li>
@@ -25,14 +24,12 @@
     </ul>
 </div>
 
-<!-- Imagen inferior centrada -->
-<div style="margin-top: 20px; text-align: center;">
+<div class="imagen-abajo">
     <img width="300"
          src="https://istereg.com/wp-content/uploads/2024/08/istereg_blasphemous-scaled.webp"
          alt="The Penitent One"
-         style="border-radius: 10px;">
+         class="imagen-inferior"
+    >
 </div>
 
-</body>
-
-{% include 'footer.html' %}
+{% endblock %}

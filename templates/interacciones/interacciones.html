@@ -1,5 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Interacciones de la Wiki de Blasphemous</h1>
 
 <!-- Botones principales -->
@@ -111,6 +112,9 @@
     <p>No hay interacciones activas.</p>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
 <script>
 // Mostrar / ocultar formulario crear
 function mostrarFormCrear() {
@@ -195,4 +199,4 @@ async function eliminarInteraccion(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

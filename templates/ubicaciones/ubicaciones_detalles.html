@@ -1,5 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Detalles de la Ubicación</h1>
 
 <a href="/ubicaciones" class="btn btn-secondary mb-3">Volver a la lista</a>
@@ -74,7 +75,9 @@
         <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
     </form>
 </div>
+{% endblock %}
 
+{% block scripts %}
 <script>
 // Mostrar / ocultar formulario editar
 function mostrarFormEditar(id, nombre, tipo, descripcion) {
@@ -129,4 +132,4 @@ async function eliminarUbicacion(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

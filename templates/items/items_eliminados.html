@@ -1,5 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Items Eliminados</h1>
 
 <!-- Volver a lista activa -->
@@ -38,7 +39,9 @@
 {% else %}
     <p>No hay items eliminados.</p>
 {% endif %}
+{% endblock %}
 
+{% block scripts %}
 <script>
 async function restaurarItem(id) {
     if (!confirm("¿Seguro que deseas restaurar este item?")) return;
@@ -57,4 +60,4 @@ async function restaurarItem(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

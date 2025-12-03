@@ -1,5 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Interacciones Eliminadas</h1>
 
 <!-- Volver a lista activa -->
@@ -34,7 +35,9 @@
 {% else %}
     <p>No hay interacciones eliminadas.</p>
 {% endif %}
+{% endblock %}
 
+{% block scripts %}
 <script>
 async function restaurarInteraccion(id) {
     if (!confirm("¿Seguro que deseas restaurar esta interacción?")) return;
@@ -53,4 +56,4 @@ async function restaurarInteraccion(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

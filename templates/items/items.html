@@ -1,5 +1,6 @@
-{% include 'header.html' %}
+{% extends "base.html" %}
 
+{% block content %}
 <h1>Items de la Wiki de Blasphemous</h1>
 
 <!-- Botones principales -->
@@ -198,6 +199,9 @@
 <p>No hay items activos.</p>
 {% endif %}
 
+{% endblock %}
+
+{% block scripts %}
 
 <script>
 // Mostrar / ocultar formulario crear
@@ -330,4 +334,4 @@ async function eliminarItem(id) {
 }
 </script>
 
-{% include 'footer.html' %}
+{% endblock %}

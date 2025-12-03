@@ -9,7 +9,13 @@ if not DATABASE_URL:
     DATABASE_URL = "sqlite:///./blasphemous.db"
 
 # 2) Crear el engine (echo=True para ver queries en logs; puedes poner False en prod si quieres menos ruido)
-engine = create_engine(DATABASE_URL, echo=True)
+#engine = create_engine(DATABASE_URL, echo=True)
+engine = create_engine(DATABASE_URL,echo=True,
+    pool_size=5,       # máximo de conexiones activas en el pool
+    max_overflow=0,    # no permitir conexiones extras temporales
+    pool_timeout=30,   # espera hasta 30s por una conexión libre
+    pool_recycle=1800  # recicla conexiones abiertas por más de 30min
+)
 
 # 3) Dependencia para obtener sesión
 def get_session():

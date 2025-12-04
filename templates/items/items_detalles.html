@@ -10,11 +10,11 @@
 
     <!-- Imagen principal -->
     {% if item.imagen_url %}
-        <img src="{{ item.imagen_url }}" alt="{{ item.nombre }} " class="item-img">
+        <img src="{{ item.imagen_url }}" alt="{{ item.nombre }}" class="item-img" style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; margin-bottom:20px;">
     {% else %}
         <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
              alt="Sin imagen"
-             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
+             style="width:100%; max-height:400px; object-fit:cover; border-radius:8px; margin-bottom:20px;">
     {% endif %}
 
     <h2>{{ item.nombre }}</h2>
@@ -29,7 +29,7 @@
     <h3>Categorías</h3>
     {% if item.categorias %}
         {% for c in item.categorias %}
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom:10px;">
                 <strong>{{ c.nombre }}</strong><br>
                 {{ c.descripcion }}<br>
                 <img src="{{ c.imagen_url }}" style="width:150px;height:150px; border-radius:10px;">
@@ -45,7 +45,7 @@
     <h3>Ubicaciones</h3>
     {% if item.ubicaciones %}
         {% for u in item.ubicaciones %}
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom:10px;">
                 <strong>{{ u.nombre }}</strong><br>
                 {{ u.descripcion }}<br>
                 <img src="{{ u.imagen_url }}" style="width:150px;height:150px; border-radius:5px;">
@@ -61,7 +61,7 @@
     <h3>Interacciones</h3>
     {% if item.interacciones %}
         {% for i in item.interacciones %}
-            <div style="margin-bottom: 10px;">
+            <div style="margin-bottom:10px;">
                 <strong>{{ i.descripcion }}</strong><br>
                 <img src="{{ i.imagen_url }}" style="width:150px;height:150px; border-radius:5px;">
             </div>
@@ -98,7 +98,7 @@
 </div>
 
 <!-- FORMULARIO EDITAR (oculto inicialmente) -->
-<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:600px;">
+<div id="form-editar" class="card p-3 mb-4" style="display:none; max-width:600px; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); z-index:9999; max-height:80vh; overflow-y:auto;">
     <h4>Editar Item</h4>
     <form id="editar-form" enctype="multipart/form-data">
         <input type="hidden" name="item_id" id="item_id">
@@ -124,7 +124,7 @@
         </div>
 
         <div class="mb-3">
-            <label class="form-label">Categoría (IDs separados por coma)</label>
+            <label class="form-label">Categorías (IDs separados por coma)</label>
             <input type="text" name="categoria_ids" id="editar-categoria_ids" class="form-control">
         </div>
 
@@ -136,228 +136,81 @@
 
         <div class="mb-3">
             <label class="form-label">Ubicaciones (IDs separados por coma)</label>
-            <input type="text" name="ubicaciones_ids" id="editar-ubicaciones" class="form-control">
+            <input type="text" name="ubicacion_ids" id="editar-ubicacion_ids" class="form-control">
         </div>
 
         <div class="mb-3">
             <label class="form-label">Interacciones (IDs separados por coma)</label>
-            <input type="text" name="interacciones_ids" id="editar-interacciones" class="form-control">
+            <input type="text" name="interaccion_ids" id="editar-interaccion_ids" class="form-control">
         </div>
 
         <button type="submit" class="btn btn-primary">Guardar cambios</button>
         <button type="button" class="btn btn-secondary" onclick="ocultarFormEditar()">Cancelar</button>
     </form>
 </div>
+
 {% endblock %}
 
 {% block scripts %}
 <script>
-// Mostrar / ocultar formulario crear
-function mostrarFormCrear() {
-    document.getElementById("form-crear").style.display = "block";
-}
-function ocultarFormCrear() {
-    document.getElementById("form-crear").style.display = "none";
-}
-
 // Mostrar / ocultar formulario editar
 function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categorias, ubicaciones, interacciones) {
-    document.getElementById("form-editar").style.display = "block";
+    const form = document.getElementById("form-editar");
+    form.style.display = "block";
     document.getElementById("item_id").value = id;
     document.getElementById("editar-nombre").value = nombre;
     document.getElementById("editar-descripcion").value = descripcion;
     document.getElementById("editar-costo").value = costo;
     document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-
     document.getElementById("editar-categoria_ids").value = categorias;
     document.getElementById("editar-ubicacion_ids").value = ubicaciones;
     document.getElementById("editar-interaccion_ids").value = interacciones;
 }
 
 function ocultarFormEditar() {
-    document.getElementById("form-editar").style.display = "none";
+    const form = document.getElementById("form-editar");
+    form.style.display = "none";
     document.getElementById("editar-form").reset();
 }
 
-//-----------------------------------------
-// 🟢 CREAR ITEM (listas correctamente enviadas como números)
-//-----------------------------------------
-document.getElementById("crear-form").addEventListener("submit", async (e) => {
-    e.preventDefault();
-
-    const form = e.target;
-    const raw = new FormData(form);
-
-    // Función para procesar listas de IDs
-    function addList(fieldName) {
-        const value = raw.get(fieldName)?.trim() || "";
-        raw.delete(fieldName);
-
-        if (value !== "") {
-            value
-                .split(",")                // separar por comas
-                .map(x => x.trim())        // eliminar espacios
-                .filter(x => x !== "")     // ignorar entradas vacías
-                .forEach(v => raw.append(fieldName, Number(v))); // enviar como número
-        }
-    }
-
-    addList("categoria_ids");
-    addList("ubicacion_ids");
-    addList("interaccion_ids");
-
-    try {
-        const response = await fetch("/items/", {
-            method: "POST",
-            body: raw
-        });
-
-        if (response.ok) {
-            alert("Item creado exitosamente.");
-            form.reset();
-            ocultarFormCrear();
-            location.reload();
-        } else {
-            const error = await response.json();
-            alert("Error al crear el item: " + JSON.stringify(error.detail));
-        }
-    } catch (err) {
-        alert("Error de conexión o inesperado: " + err);
-    }
-});
-
-//
-// -----------------------------------------
-// 🟦 EDITAR ITEM (también listas correctas)
-// -----------------------------------------
+// Editar item
 document.getElementById("editar-form").addEventListener("submit", async (e) => {
     e.preventDefault();
+    const form = e.target;
+    const itemId = document.getElementById("item_id").value;
+    const formData = new FormData(form);
 
-    const raw = new FormData(e.target);
-    const itemId = raw.get("item_id");
-    raw.delete("item_id");
-
-    function addList(fieldName) {
-        const value = raw.get(fieldName)?.trim() || "";
-        raw.delete(fieldName);
-        if (value !== "") {
-            value.split(",").map(x => x.trim()).forEach(v => raw.append(fieldName, v));
-        }
-    }
-
-    addList("categoria_ids");
-    addList("ubicacion_ids");
-    addList("interaccion_ids");
-
-    const response = await fetch(`/items/${itemId}`, {
-        method: "PUT",
-        body: raw
+    // Convertir listas separadas por comas en múltiples entradas
+    ["categoria_ids","ubicacion_ids","interaccion_ids"].forEach(field => {
+        const value = formData.get(field) || "";
+        formData.delete(field);
+        value.split(",").map(x => x.trim()).filter(x => x!=="").forEach(v => formData.append(field,v));
     });
 
-    if (response.ok) {
-        alert("Ítem actualizado.");
+    const response = await fetch(`/items/${itemId}`, { method:"PUT", body: formData });
+
+    if(response.ok){
+        alert("Item actualizado exitosamente.");
         ocultarFormEditar();
         location.reload();
     } else {
         const error = await response.json();
-        alert("Error al editar: " + JSON.stringify(error.detail));
+        alert("Error al actualizar: " + JSON.stringify(error.detail));
     }
-});
-
-// ---------------------------------------------------------
-// CARGA DE DETALLES DEL ÍTEM DESDE EL ENDPOINT REAL
-// ---------------------------------------------------------
-
-document.addEventListener('DOMContentLoaded', function () {
-    const itemId = {{ item.id }};
-
-    fetch(`/items/${itemId}/detalles`)
-        .then(response => {
-            if (!response.ok) throw new Error("No se pudo obtener detalles del ítem");
-            return response.json();
-        })
-        .then(data => {
-
-            // -------------------------
-            // Actualizar título, costo, etc.
-            // -------------------------
-            document.querySelector(".card-title").innerText =
-                data.nombre ?? "Sin nombre";
-
-            document.querySelector(".card-text").innerText =
-                data.descripcion ?? "Sin descripción";
-
-            document.getElementById("costo-detalle").innerText =
-                data.costo ?? "No especificado";
-
-            document.getElementById("indispensable-detalle").innerText =
-                data.indispensable ? "Sí" : "No";
-
-            // -------------------------
-            // Categorías
-            -------------------------
-            const categoriasContainer = document.getElementById('categorias-detalles');
-            categoriasContainer.innerHTML = "";
-
-            data.categorias.forEach(categoria => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <strong>${categoria.nombre}</strong><br>
-                    ${categoria.descripcion}<br>
-                    <img src="${categoria.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
-                `;
-                categoriasContainer.appendChild(div);
-            });
-
-            // -------------------------
-            // Ubicaciones
-            -------------------------
-            const ubicacionesContainer = document.getElementById('ubicaciones-detalles');
-            ubicacionesContainer.innerHTML = "";
-
-            data.ubicaciones.forEach(ubicacion => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <strong>${ubicacion.nombre}</strong><br>
-                    ${ubicacion.descripcion}<br>
-                    <img src="${ubicacion.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
-                `;
-                ubicacionesContainer.appendChild(div);
-            });
-
-            // -------------------------
-            // Interacciones
-            -------------------------
-            const interaccionesContainer = document.getElementById('interacciones-detalles');
-            interaccionesContainer.innerHTML = "";
-
-            data.interacciones.forEach(interaccion => {
-                const div = document.createElement('div');
-                div.innerHTML = `
-                    <strong>${interaccion.descripcion}</strong><br>
-                    <img src="${interaccion.imagen_url || '#'}" style="width:50px;height:50px;"><br><br>
-                `;
-                interaccionesContainer.appendChild(div);
-            });
-        })
-        .catch(err => console.error(err));
 });
 
 // Eliminar item
 async function eliminarItem(id) {
-    const confirmar = confirm("¿Seguro que deseas eliminar este ítem?");
-    if (!confirmar) return;
+    if(!confirm("¿Seguro que deseas eliminar este ítem?")) return;
 
-    const response = await fetch(`/items/${id}`, { method: "DELETE" });
-
-    if (response.ok) {
-        alert("Ítem eliminado exitosamente.");
-        location.reload();
+    const response = await fetch(`/items/${id}`, { method:"DELETE" });
+    if(response.ok){
+        alert("Item eliminado exitosamente.");
+        window.location.href="/items";
     } else {
         const error = await response.json();
-        alert("Error al eliminar el ítem: " + (error.detail || "Desconocido"));
+        alert("Error al eliminar el item: " + (error.detail || "Desconocido"));
     }
 }
 </script>
-
 {% endblock %}

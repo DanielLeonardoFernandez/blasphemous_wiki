@@ -14,16 +14,6 @@
     <h4>Crear nueva interacción</h4>
     <form id="crear-form" enctype="multipart/form-data">
         <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input type="text" name="nombre" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <input type="text" name="tipo" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
             <label class="form-label">Descripción</label>
             <textarea name="descripcion" class="form-control"></textarea>
         </div>
@@ -43,16 +33,6 @@
     <h4>Editar interacción</h4>
     <form id="editar-form" enctype="multipart/form-data">
         <input type="hidden" name="interaccion_id" id="interaccion_id">
-
-        <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <input type="text" name="tipo" id="editar-tipo" class="form-control" required>
-        </div>
 
         <div class="mb-3">
             <label class="form-label">Descripción</label>
@@ -79,14 +59,14 @@
                 <div class="card">
 
                     {% if interaccion.imagen_url %}
-                        <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.nombre }}">
+                        <img src="{{ interaccion.imagen_url }}" class="card-img-top" alt="{{ interaccion.descripcion }}">
                     {% else %}
                         <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
                     {% endif %}
 
                     <div class="card-body">
-                        <h5 class="card-title">{{ interaccion.nombre }}</h5>
-                        <p class="card-text"><strong>Tipo:</strong> {{ interaccion.tipo }}</p>
+                        <h5 class="card-title">{{ interaccion.descripcion }}</h5>
+                        <h5 class="card-text text-muted">Interacción</h5>
                     </div>
 
                 </div>
@@ -94,7 +74,7 @@
 
             <div class="mt-2 d-flex justify-content-between">
                 <button class="btn btn-primary btn-sm"
-                    onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
+                    onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.descripcion|escape }}")'>
                     Editar
                 </button>
 
@@ -145,11 +125,9 @@ document.getElementById("crear-form").addEventListener("submit", async (e) => {
 });
 
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, tipo, descripcion) {
+function mostrarFormEditar(id, descripcion) {
     document.getElementById("form-editar").style.display = "block";
     document.getElementById("interaccion_id").value = id;
-    document.getElementById("editar-nombre").value = nombre;
-    document.getElementById("editar-tipo").value = tipo;
     document.getElementById("editar-descripcion").value = descripcion;
 }
 function ocultarFormEditar() {

@@ -11,39 +11,35 @@
     <!-- Imagen principal -->
     {% if interaccion.imagen_url %}
         <img src="{{ interaccion.imagen_url }}"
-             alt="{{ interaccion.nombre }}" class="interaccion-img">
+             alt="{{ interaccion.descripcion }}" class="interaccion-img">
     {% else %}
         <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
              alt="Sin imagen"
              style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
     {% endif %}
 
-    <!-- Nombre -->
-    <h2>{{ interaccion.nombre }}</h2>
+    <!-- Descripción como título principal -->
+    <h2>{{ interaccion.descripcion or "Sin descripción" }}</h2>
 
-    <!-- Tipo -->
-    <p><strong>Tipo:</strong> {{ interaccion.tipo or "No especificado" }}</p>
-
-    <!-- Descripción -->
-    <p>{{ interaccion.descripcion or "Sin descripción" }}</p>
+    <!-- Tipo como subtítulo visual -->
+    <h5 class="text-muted">Interacción</h5>
 
     <hr>
 
     <!-- ID -->
     <p><strong>ID:</strong> {{ interaccion.id }}</p>
 
-        <div class="d-flex justify-content-between">
-            <!-- Editar con fetch -->
-            <button class="btn btn-primary btn-sm"
-                onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.nombre|escape }}", "{{ interaccion.tipo|escape }}", "{{ interaccion.descripcion|escape }}")'>
-                Editar
-            </button>
+    <div class="d-flex justify-content-between">
+        <!-- Editar con fetch -->
+        <button class="btn btn-primary btn-sm"
+            onclick='mostrarFormEditar({{ interaccion.id }}, "{{ interaccion.descripcion|escape }}")'>
+            Editar
+        </button>
 
-            <!-- Eliminar REAL con fetch DELETE -->
-            <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
-                Eliminar
-            </button>
-        </div>
+        <!-- Eliminar REAL con fetch DELETE -->
+        <button class="btn btn-danger btn-sm" onclick="eliminarInteraccion({{ interaccion.id }})">
+            Eliminar
+        </button>
     </div>
 </div>
 
@@ -52,16 +48,6 @@
     <h4>Editar interacción</h4>
     <form id="editar-form" enctype="multipart/form-data">
         <input type="hidden" name="interaccion_id" id="interaccion_id">
-
-        <div class="mb-3">
-            <label class="form-label">Nombre</label>
-            <input type="text" name="nombre" id="editar-nombre" class="form-control" required>
-        </div>
-
-        <div class="mb-3">
-            <label class="form-label">Tipo</label>
-            <input type="text" name="tipo" id="editar-tipo" class="form-control">
-        </div>
 
         <div class="mb-3">
             <label class="form-label">Descripción</label>
@@ -83,11 +69,9 @@
 {% block scripts %}
 <script>
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, tipo, descripcion) {
+function mostrarFormEditar(id, descripcion) {
     document.getElementById("form-editar").style.display = "block";
     document.getElementById("interaccion_id").value = id;
-    document.getElementById("editar-nombre").value = nombre;
-    document.getElementById("editar-tipo").value = tipo;
     document.getElementById("editar-descripcion").value = descripcion;
 }
 function ocultarFormEditar() {
@@ -134,5 +118,4 @@ async function eliminarInteraccion(id) {
     }
 }
 </script>
-
 {% endblock %}

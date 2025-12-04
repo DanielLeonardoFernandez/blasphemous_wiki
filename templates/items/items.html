@@ -118,39 +118,26 @@
     {% for item in items %}
         <div class="col-md-4 mb-4">
 
-            <!-- Toda la card ahora es un enlace -->
+            <!-- Toda la card como enlace -->
             <a href="/items/{{ item.id }}/detalles" style="text-decoration: none; color: inherit;">
                 <div class="card">
-
                     {% if item.imagen_url %}
                         <img src="{{ item.imagen_url }}" class="card-img-top" alt="{{ item.nombre }}">
                     {% else %}
                         <img src="https://via.placeholder.com/300x200?text=Sin+imagen" class="card-img-top" alt="Sin imagen">
                     {% endif %}
-
                     <div class="card-body">
                         <h5 class="card-title">{{ item.nombre }}</h5>
-
                         <p><strong>Costo:</strong> {{ item.costo or "sin precio" }}</p>
                         <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
                     </div>
-
                 </div>
             </a>
 
-            <!-- Botones fuera del <a> -->
+            <!-- Botones fuera del <a> usando data-json -->
             <div class="mt-2 d-flex justify-content-between">
-                <button class="btn btn-primary btn-sm"
-                    onclick='mostrarFormEditar(
-                        {{ item.id }},
-                        "{{ item.nombre|escape }}",
-                        "{{ item.descripcion|escape }}",
-                        "{{ item.costo or "" }}",
-                        {{ "true" if item.indispensable else "false" }},
-                        "{{ item.categorias|map(attribute="id")|join(",") }}",
-                        "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
-                        "{{ item.interacciones|map(attribute="id")|join(",") }}"
-                    )'>
+                <button class="btn btn-primary btn-sm btn-editar"
+                    data-json='{{ item|tojson|safe }}'>
                     Editar
                 </button>
 
@@ -180,44 +167,44 @@ function ocultarFormCrear() {
 }
 
 // Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categorias, ubicaciones, interacciones) {
+function mostrarFormEditar() {
     document.getElementById("form-editar").style.display = "block";
-    document.getElementById("item_id").value = id;
-    document.getElementById("editar-nombre").value = nombre;
-    document.getElementById("editar-descripcion").value = descripcion;
-    document.getElementById("editar-costo").value = costo;
-    document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-
-    document.getElementById("editar-categoria_ids").value = categorias;
-    document.getElementById("editar-ubicacion_ids").value = ubicaciones;
-    document.getElementById("editar-interaccion_ids").value = interacciones;
 }
-
 function ocultarFormEditar() {
     document.getElementById("form-editar").style.display = "none";
     document.getElementById("editar-form").reset();
 }
 
+// Asignar datos de cada botón de editar usando JSON
+document.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const item = JSON.parse(btn.dataset.json);
+        mostrarFormEditar();
+        document.getElementById("item_id").value = item.id;
+        document.getElementById("editar-nombre").value = item.nombre;
+        document.getElementById("editar-descripcion").value = item.descripcion;
+        document.getElementById("editar-costo").value = item.costo || '';
+        document.getElementById("editar-indispensable").checked = item.indispensable;
+
+        document.getElementById("editar-categoria_ids").value = item.categorias.map(c => c.id).join(',');
+        document.getElementById("editar-ubicacion_ids").value = item.ubicaciones.map(u => u.id).join(',');
+        document.getElementById("editar-interaccion_ids").value = item.interacciones.map(i => i.id).join(',');
+    });
+});
+
 //-----------------------------------------
-// 🟢 CREAR ITEM (listas correctamente enviadas como números)
+// CREAR ITEM
 //-----------------------------------------
 document.getElementById("crear-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const form = e.target;
     const raw = new FormData(form);
 
-    // Función para procesar listas de IDs
     function addList(fieldName) {
         const value = raw.get(fieldName)?.trim() || "";
         raw.delete(fieldName);
-
         if (value !== "") {
-            value
-                .split(",")                // separar por comas
-                .map(x => x.trim())        // eliminar espacios
-                .filter(x => x !== "")     // ignorar entradas vacías
-                .forEach(v => raw.append(fieldName, Number(v))); // enviar como número
+            value.split(",").map(x => x.trim()).filter(x => x !== "").forEach(v => raw.append(fieldName, Number(v)));
         }
     }
 
@@ -226,11 +213,7 @@ document.getElementById("crear-form").addEventListener("submit", async (e) => {
     addList("interaccion_ids");
 
     try {
-        const response = await fetch("/items/", {
-            method: "POST",
-            body: raw
-        });
-
+        const response = await fetch("/items/", { method: "POST", body: raw });
         if (response.ok) {
             alert("Item creado exitosamente.");
             form.reset();
@@ -245,13 +228,11 @@ document.getElementById("crear-form").addEventListener("submit", async (e) => {
     }
 });
 
-//
-// -----------------------------------------
-// 🟦 EDITAR ITEM (también listas correctas)
-// -----------------------------------------
+//-----------------------------------------
+// EDITAR ITEM
+//-----------------------------------------
 document.getElementById("editar-form").addEventListener("submit", async (e) => {
     e.preventDefault();
-
     const raw = new FormData(e.target);
     const itemId = raw.get("item_id");
     raw.delete("item_id");
@@ -268,11 +249,7 @@ document.getElementById("editar-form").addEventListener("submit", async (e) => {
     addList("ubicacion_ids");
     addList("interaccion_ids");
 
-    const response = await fetch(`/items/${itemId}`, {
-        method: "PUT",
-        body: raw
-    });
-
+    const response = await fetch(`/items/${itemId}`, { method: "PUT", body: raw });
     if (response.ok) {
         alert("Ítem actualizado.");
         ocultarFormEditar();
@@ -283,14 +260,14 @@ document.getElementById("editar-form").addEventListener("submit", async (e) => {
     }
 });
 
-
-// Eliminar item
+//-----------------------------------------
+// ELIMINAR ITEM
+//-----------------------------------------
 async function eliminarItem(id) {
     const confirmar = confirm("¿Seguro que deseas eliminar este ítem?");
     if (!confirmar) return;
 
     const response = await fetch(`/items/${id}`, { method: "DELETE" });
-
     if (response.ok) {
         alert("Ítem eliminado exitosamente.");
         location.reload();

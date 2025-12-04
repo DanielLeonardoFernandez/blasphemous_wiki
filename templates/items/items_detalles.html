@@ -76,17 +76,8 @@
 
     <!-- Controles -->
     <div class="d-flex justify-content-between mt-4">
-        <button class="btn btn-primary"
-            onclick='mostrarFormEditar(
-                {{ item.id }},
-                "{{ item.nombre|escape }}",
-                "{{ item.descripcion|escape }}",
-                "{{ item.costo or "" }}",
-                {{ "true" if item.indispensable else "false" }},
-                "{{ item.categorias|map(attribute="id")|join(",") }}",
-                "{{ item.ubicaciones|map(attribute="id")|join(",") }}",
-                "{{ item.interacciones|map(attribute="id")|join(",") }}"
-            )'>
+        <button class="btn btn-primary btn-editar"
+            data-json='{{ item|tojson|safe }}'>
             Editar
         </button>
 
@@ -153,25 +144,30 @@
 
 {% block scripts %}
 <script>
-// Mostrar / ocultar formulario editar
-function mostrarFormEditar(id, nombre, descripcion, costo, indispensable, categorias, ubicaciones, interacciones) {
-    const form = document.getElementById("form-editar");
-    form.style.display = "block";
-    document.getElementById("item_id").value = id;
-    document.getElementById("editar-nombre").value = nombre;
-    document.getElementById("editar-descripcion").value = descripcion;
-    document.getElementById("editar-costo").value = costo;
-    document.getElementById("editar-indispensable").checked = indispensable === true || indispensable === "true";
-    document.getElementById("editar-categoria_ids").value = categorias;
-    document.getElementById("editar-ubicacion_ids").value = ubicaciones;
-    document.getElementById("editar-interaccion_ids").value = interacciones;
+function mostrarFormEditar() {
+    document.getElementById("form-editar").style.display = "block";
 }
-
 function ocultarFormEditar() {
-    const form = document.getElementById("form-editar");
-    form.style.display = "none";
+    document.getElementById("form-editar").style.display = "none";
     document.getElementById("editar-form").reset();
 }
+
+// Asignar datos desde data-json
+document.querySelectorAll(".btn-editar").forEach(btn => {
+    btn.addEventListener("click", () => {
+        const item = JSON.parse(btn.dataset.json);
+        mostrarFormEditar();
+        document.getElementById("item_id").value = item.id;
+        document.getElementById("editar-nombre").value = item.nombre;
+        document.getElementById("editar-descripcion").value = item.descripcion;
+        document.getElementById("editar-costo").value = item.costo || '';
+        document.getElementById("editar-indispensable").checked = item.indispensable;
+
+        document.getElementById("editar-categoria_ids").value = item.categorias.map(c => c.id).join(',');
+        document.getElementById("editar-ubicacion_ids").value = item.ubicaciones.map(u => u.id).join(',');
+        document.getElementById("editar-interaccion_ids").value = item.interacciones.map(i => i.id).join(',');
+    });
+});
 
 // Editar item
 document.getElementById("editar-form").addEventListener("submit", async (e) => {
@@ -180,7 +176,6 @@ document.getElementById("editar-form").addEventListener("submit", async (e) => {
     const itemId = document.getElementById("item_id").value;
     const formData = new FormData(form);
 
-    // Convertir listas separadas por comas en múltiples entradas
     ["categoria_ids","ubicacion_ids","interaccion_ids"].forEach(field => {
         const value = formData.get(field) || "";
         formData.delete(field);
@@ -188,7 +183,6 @@ document.getElementById("editar-form").addEventListener("submit", async (e) => {
     });
 
     const response = await fetch(`/items/${itemId}`, { method:"PUT", body: formData });
-
     if(response.ok){
         alert("Item actualizado exitosamente.");
         ocultarFormEditar();

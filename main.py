@@ -58,3 +58,5 @@ async def categorias_page(request: Request, session: Session = Depends(get_sessi
         "categorias/categorias.html",
         {"request": request, "categorias": categorias}
     )
+
+

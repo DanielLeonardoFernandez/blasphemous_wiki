@@ -12,8 +12,7 @@
     <!-- Imagen principal -->
     {% if categoria.imagen_url %}
         <img src="{{ categoria.imagen_url }}"
-             alt="{{ categoria.nombre }}"
-             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
+             alt="{{ categoria.nombre }}" class="categoria-img">
     {% else %}
         <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
              alt="Sin imagen"

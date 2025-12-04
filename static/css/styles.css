@@ -1,18 +1,163 @@
-/* ====== FONDO GENERAL ====== */
+/* ================= FONDO GENERAL ================= */
 body {
     background-color: #000000;  /* fondo negro */
-
-    font-family: Arial, sans-serif;
+    font-family: Arial, sans-serif; /* mantener la fuente original */
     color: #f2f2f2;   /* Para textos claros sobre fondo oscuro */
+    line-height: 1.6;
 }
 
-/* Footer Carmesí */
+/* ================= BANNER ================= */
+.banner-container img {
+    width: 100%;
+    height: 300px;
+    object-fit: cover;
+}
+
+/* ================= TÍTULOS PRINCIPALES ================= */
+.titulo-principal {
+    font-family: 'Cinzel', serif; /* tu fuente original */
+    font-size: 48px;
+    text-align: center;
+    margin-top: 30px;
+    color: #f8e4c1;
+    text-shadow: 2px 2px 6px black;
+}
+
+/* ================= TEXTOS CENTRADOS ================= */
+.texto-centro {
+    text-align: center;
+    font-size: 18px;
+}
+
+/* ================= HISTORIA BLASPHEMOUS ================= */
+.historia-blasphemous h2 {
+    font-family: Arial, sans-serif; /* misma fuente que tu CSS original */
+    color: #e05f50;
+    font-size: 24px;
+    margin-top: 2rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+.historia-blasphemous p {
+    font-family: Arial, sans-serif; /* mantener fuente original */
+    font-size: 16px;
+    max-width: 700px;
+    margin: 0 auto 1rem auto;
+    text-align: center;
+    color: #f5f5f5;
+}
+
+/* ================= MENÚ DE ICONOS ================= */
+.menu-centro ul {
+    list-style: none;
+    padding: 0;
+    text-align: center;
+    display: flex;
+    justify-content: center;
+    gap: 25px;
+    margin: 20px 0;
+}
+
+.menu-centro ul li {
+    display: inline-block;
+}
+
+.menu-centro .nav-link {
+    display: inline-block;
+}
+
+.nav-icon {
+    width: 200px;
+    height: 200px;
+    object-fit: contain;
+    transition: transform 0.2s ease;
+}
+
+.navbar-icons .nav-link:hover .nav-icon {
+    transform: scale(1.15);
+}
+
+/* ================= IMAGEN INFERIOR ================= */
+.imagen-abajo {
+    text-align: center;
+    margin-top: 20px;
+}
+
+.imagen-abajo img {
+    border-radius: 10px;
+}
+
+/* ================= TARJETAS ================= */
+.card {
+    background-color: #1a1a1a;
+    color: #f2f2f2;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
+    padding: 15px;
+    transition: transform 0.2s ease;
+}
+
+.card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+}
+
+.card img {
+    width: 100%;
+    height: 200px;
+    object-fit: contain;
+    background-color: #1a1a1a;
+    border-radius: 10px 10px 0 0;
+}
+
+.card-title {
+    font-family: Arial, sans-serif;
+    font-weight: 700;
+}
+
+.card-text {
+    font-size: 0.95rem;
+}
+
+/* ================= BOTÓN DE ESTADÍSTICAS ================= */
+.btn-container {
+    display: flex;
+    justify-content: center;
+    margin-top: 1rem;
+}
+
+.btn-dashboard {
+    background-color: #ff6f61;
+    color: #ffffff;
+    font-weight: bold;
+    font-size: 1.1rem;
+    padding: 12px 28px;
+    border-radius: 8px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    border: 2px solid #ff8a80;
+}
+
+.btn-dashboard:hover {
+    background-color: #ff4a3d;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 10px rgba(0,0,0,0.15);
+}
+
+.btn-dashboard:active {
+    transform: translateY(1px);
+    box-shadow: 0 3px 5px rgba(0,0,0,0.1);
+}
+
+/* ================= FOOTER ================= */
 .main-footer {
     background-color: #990000;
     color: white;
     padding: 25px 0;
     margin-top: 40px;
-    border-top: 3px solid #5c0000; /* más oscuro, estilo Blasphemous */
+    border-top: 3px solid #5c0000;
 }
 
 .main-footer .footer-link {
@@ -26,181 +171,34 @@ body {
     text-decoration: underline;
 }
 
-/* ====== BANNER ====== */
-.banner-container img {
-    width: 100%;
-    height: 300px;
-    object-fit: cover;
-}
-
-/* ====== TÍTULO PRINCIPAL ====== */
-.titulo-principal {
-    font-family: 'Cinzel', serif;
-    font-size: 48px;
-    text-align: center;
-    margin-top: 30px;
-    color: #f8e4c1;
-    text-shadow: 2px 2px 6px black;
-}
-
-/* ====== TEXTOS CENTRADOS ====== */
-.texto-centro {
-    text-align: center;
-    font-size: 18px;
-}
-
-/* ====== MENÚ ====== */
-.menu-centro ul {
-    list-style: none;
-    padding: 0;
-    text-align: center;
-}
-
-.menu-centro ul li {
-    margin: 8px 0;
-}
-
-.menu-centro a {
-    font-size: 22px;
-    font-weight: bold;
-    color: #ffd2a0;
-    text-decoration: none;
-}
-
-.menu-centro a:hover {
-    color: #ff9f43;
-}
-
-/* ====== IMAGEN INFERIOR ====== */
-.imagen-abajo {
-    text-align: center;
-    margin-top: 20px;
-}
-
-.imagen-abajo img {
-    border-radius: 10px;
-}
-
-/* ====== TARJETAS ====== */
-.card {
-    background: rgba(255, 255, 255, 0.9);
-    padding: 20px;
-    border-radius: 10px;
-    box-shadow: 0 2px 7px rgba(0,0,0,0.3);
-}
-
-img {
-    border-radius: 10px;
-}
-
-/* ====== ICONOS DE LA PÁGINA PRINCIPAL ====== */
-.navbar-icons {
-    display: flex;             /* pone los <li> en línea */
-    justify-content: center;   /* centra horizontalmente */
-    gap: 25px;                 /* separación entre iconos */
-    padding: 0;
-    margin: 20px 0;
-    list-style: none;          /* quita bullets */
-}
-
-.navbar-icons .nav-item {
-    display: inline-block;
-}
-
-.navbar-icons .nav-link {
-    display: inline-block;
-}
-
-.nav-icon {
-    width: 200px;               /* tamaño uniforme */
-    height: 200px;
-    object-fit: contain;
-    transition: transform 0.2s ease;
-}
-
-/* efecto hover */
-.navbar-icons .nav-link:hover .nav-icon {
-    transform: scale(1.15);
-}
-/* Fuente medieval para el brand del navbar */
-.navbar-brand {
-    font-family: 'Cinzel', serif;
-    font-weight: 700;   /* opcional: más destacado */
-    font-size: 1.75rem; /* ajusta tamaño según prefieras */
-}
-/* ====== CARDS PERSONALIZADAS ====== */
-.card {
-    background-color: #1a1a1a; /* color de fondo oscuro */
-    color: #f2f2f2;            /* texto claro */
-    border-radius: 10px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.6);
-    padding: 15px;
-    transition: transform 0.2s ease;
-}
-
-/* Hover opcional para darle efecto */
-.card:hover {
-    transform: translateY(-3px);
-    box-shadow: 0 4px 12px rgba(0,0,0,0.8);
-}
-
-/* Imagen dentro de la card */
-.card img {
-    width: 100%;          /* ocupa todo el ancho de la card */
-    height: 200px;        /* altura fija de la card */
-    object-fit: contain;  /* mantiene proporción y muestra toda la imagen */
-    background-color: #1a1a1a; /* opcional: fondo negro si hay espacio vacío */
-    border-radius: 10px 10px 0 0;
-}
-
-/* Títulos y textos dentro de la card */
-.card-title {
-    font-family: 'Cinzel', serif; /* tipografía medieval si quieres */
-    font-weight: 700;
-}
-
-.card-text {
-    font-size: 0.95rem;
-}
-/* ====== BARRA DE BÚSQUEDA ITEMS MEDIEVAL ====== */
+/* ================= NAVBAR ================= */
 .navbar.bg-light {
-    background-color: #330000 !important;  /* rojo oscuro profundo */
+    background-color: #330000 !important;
     padding: 12px 20px;
-    border-radius: 10px;                   /* bordes suavizados */
-    box-shadow: 0 4px 10px rgba(0,0,0,0.5); /* sombra para efecto 3D */
-    font-family: 'Cinzel', serif;          /* tipografía medieval */
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+    font-family: Arial, sans-serif; /* restaurada fuente original */
 }
 
-/* Inputs de búsqueda */
-.navbar .form-control {
-    background-color: #660000;  /* rojo oscuro más claro */
-    color: #f2f2f2;             /* texto claro */
-    border: 2px solid #990000;  /* borde acotado y contrastante */
-    border-radius: 5px;
-    padding: 6px 10px;
-    font-family: 'Cinzel', serif;
-}
-
-.navbar .form-control::placeholder {
-    color: #ffcccc;  /* placeholder más suave */
-    opacity: 0.8;
-}
-
-/* Select de indispensable */
+.navbar .form-control,
 .navbar .form-select {
     background-color: #660000;
     color: #f2f2f2;
     border: 2px solid #990000;
     border-radius: 5px;
-    font-family: 'Cinzel', serif;
+    font-family: Arial, sans-serif;
 }
 
-/* Botón buscar */
+.navbar .form-control::placeholder {
+    color: #ffcccc;
+    opacity: 0.8;
+}
+
 .navbar .btn-outline-success {
     border-color: #ff6666;
     color: #ff6666;
     font-weight: bold;
-    font-family: 'Cinzel', serif;
+    font-family: Arial, sans-serif;
     transition: all 0.2s ease;
 }
 
@@ -209,11 +207,88 @@ img {
     border-color: #ff3333;
     color: #fff;
     box-shadow: 0 2px 6px rgba(0,0,0,0.6);
+
 }
 
-/* Etiquetas de los inputs */
 .navbar .form-label {
     color: #f2f2f2;
     font-weight: bold;
     font-family: 'Cinzel', serif;
+    font-size: 18px; /* ajustar al tamaño que prefieras */
+
+}
+
+/* ====== Aumentar tamaño de textos del navbar sin tocar index ====== */
+.navbar .nav-link {
+    font-family: 'Cinzel', serif;
+    font-size: 25px; /* ajustar al tamaño que quieras */
+}
+
+.navbar .navbar-brand {
+    font-family: 'Cinzel', serif;
+    font-size: 1.75rem; /* o el tamaño que prefieras para el brand */
+}
+
+/* Contenedor principal de detalles del item */
+.item-detalle-container {
+    width: 100%;
+    padding: 20px;
+    background: #1a1a1a;
+    border-radius: 8px;
+    text-align: center; /* centra texto e imágenes inline */
+}
+
+/* Centrar imágenes dentro del contenedor */
+.item-detalle-container img {
+    display: block;
+    margin: 0 auto 20px auto; /* centrado horizontal + margen inferior */
+}
+
+/* Centrar divs internos si es necesario */
+.item-detalle-container > div {
+    display: inline-block; /* hace que los divs se comporten como inline para centrar */
+    text-align: center;
+    margin-bottom: 10px;
+}
+.item-img {
+    width: 100%;         /* ocupa todo el ancho del contenedor */
+    max-height: 400px;   /* altura máxima */
+    object-fit: contain;  /* ajusta la imagen completa, sin recortar */
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 20px auto; /* centrado horizontal */
+    background-color: #1a1a1a; /* opcional, relleno si la imagen no ocupa todo */
+}
+
+/* ====== Imágenes de categorías ====== */
+.categoria-img {
+    width: 100%;         /* ocupa todo el ancho del contenedor */
+    max-height: 400px;   /* altura máxima */
+    object-fit: contain;  /* ajusta la imagen completa, sin recortar */
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 20px auto; /* centrado horizontal */
+    background-color: #1a1a1a; /* opcional, relleno si la imagen no ocupa todo */
+}
+
+/* ====== Imágenes de ubicaciones ====== */
+.ubicacion-img {
+    width: 100%;         /* ocupa todo el ancho del contenedor */
+    max-height: 400px;   /* altura máxima */
+    object-fit: contain;  /* ajusta la imagen completa, sin recortar */
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 20px auto; /* centrado horizontal */
+    background-color: #1a1a1a; /* opcional, relleno si la imagen no ocupa todo */
+}
+
+/* ====== Imágenes de interacciones ====== */
+.interaccion-img {
+    width: 100%;         /* ocupa todo el ancho del contenedor */
+    max-height: 400px;   /* altura máxima */
+    object-fit: contain;  /* ajusta la imagen completa, sin recortar */
+    border-radius: 8px;
+    display: block;
+    margin: 0 auto 20px auto; /* centrado horizontal */
+    background-color: #1a1a1a; /* opcional, relleno si la imagen no ocupa todo */
 }

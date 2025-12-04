@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1 class="titulo-principal text-center mb-4">Dashboard Blasphemous</h1>
+
+<!-- TARJETAS CON CONTADORES -->
+<div class="row mb-4">
+  <div class="col-md-3">
+    <div class="card text-center bg-danger text-white p-3">
+      <h4>Items</h4>
+      <h2 id="count-items">{{ total_items }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-primary text-white p-3">
+      <h4>Categorías</h4>
+      <h2 id="count-categorias">{{ total_categorias }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-success text-white p-3">
+      <h4>Ubicaciones</h4>
+      <h2 id="count-ubicaciones">{{ total_ubicaciones }}</h2>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="card text-center bg-warning text-dark p-3">
+      <h4>Interacciones</h4>
+      <h2 id="count-interacciones">{{ total_interacciones }}</h2>
+    </div>
+  </div>
+</div>
+
+<!-- GRAFICAS -->
+<div class="row">
+  <div class="col-md-6 mb-4">
+    <canvas id="chart-items"></canvas>
+  </div>
+  <div class="col-md-6 mb-4">
+    <canvas id="chart-categorias"></canvas>
+  </div>
+  <div class="col-md-6 mb-4">
+    <canvas id="chart-ubicaciones"></canvas>
+  </div>
+  <div class="col-md-6 mb-4">
+    <canvas id="chart-interacciones"></canvas>
+  </div>
+</div>
+
+<!-- Chart.js -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+const chartOptions = {
+    responsive: true,
+    plugins: { legend: { display: false } },
+    scales: { y: { beginAtZero: true } }
+};
+
+new Chart(document.getElementById('chart-items'), {
+  type: 'bar',
+  data: { labels: ['Items'], datasets: [{ label: 'Cantidad', data: [{{ total_items }}], backgroundColor: 'rgba(255, 99, 132, 0.6)' }] },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('chart-categorias'), {
+  type: 'bar',
+  data: { labels: ['Categorías'], datasets: [{ label: 'Cantidad', data: [{{ total_categorias }}], backgroundColor: 'rgba(54, 162, 235, 0.6)' }] },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('chart-ubicaciones'), {
+  type: 'bar',
+  data: { labels: ['Ubicaciones'], datasets: [{ label: 'Cantidad', data: [{{ total_ubicaciones }}], backgroundColor: 'rgba(75, 192, 192, 0.6)' }] },
+  options: chartOptions
+});
+
+new Chart(document.getElementById('chart-interacciones'), {
+  type: 'bar',
+  data: { labels: ['Interacciones'], datasets: [{ label: 'Cantidad', data: [{{ total_interacciones }}], backgroundColor: 'rgba(255, 206, 86, 0.6)' }] },
+  options: chartOptions
+});
+</script>
+
+{% endblock %}

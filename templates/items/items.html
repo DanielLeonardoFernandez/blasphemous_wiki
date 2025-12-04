@@ -130,42 +130,9 @@
 
                     <div class="card-body">
                         <h5 class="card-title">{{ item.nombre }}</h5>
-                        <p class="card-text">{{ item.descripcion }}</p>
 
-                        <p><strong>Costo:</strong> {{ item.costo or "No especificado" }}</p>
+                        <p><strong>Costo:</strong> {{ item.costo or "sin precio" }}</p>
                         <p><strong>Indispensable:</strong> {{ "Sí" if item.indispensable else "No" }}</p>
-
-                        <p><strong>Categorías:</strong>
-                            {% if item.categoria_ids %}
-                                {% for cid in item.categoria_ids %}
-                                    {{ cid }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Ninguna
-                            {% endif %}
-                        </p>
-
-                        <p><strong>Ubicaciones:</strong>
-                            {% if item.ubicacion_ids %}
-                                {% for uid in item.ubicacion_ids %}
-                                    {{ uid }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Ninguna
-                            {% endif %}
-                        </p>
-
-                        <p><strong>Interacciones:</strong>
-                            {% if item.interaccion_ids %}
-                                {% for iid in item.interaccion_ids %}
-                                    {{ iid }}{% if not loop.last %}, {% endif %}
-                                {% endfor %}
-                            {% else %}
-                                Ninguna
-                            {% endif %}
-                        </p>
-
-                        <p><strong>ID:</strong> {{ item.id }}</p>
                     </div>
 
                 </div>

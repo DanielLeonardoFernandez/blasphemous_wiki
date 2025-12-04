@@ -6,13 +6,12 @@
 <a href="/ubicaciones" class="btn btn-secondary mb-3">Volver a la lista</a>
 
 <!-- Contenedor ancho completo -->
-<div style="width: 100%; padding: 20px; background: #1a1a1a; border-radius: 8px;">
+<div class="item-detalle-container">
 
     <!-- Imagen principal -->
     {% if ubicacion.imagen_url %}
         <img src="{{ ubicacion.imagen_url }}"
-             alt="{{ ubicacion.nombre }}"
-             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
+             alt="{{ ubicacion.nombre }}" class="ubicacion-img">
     {% else %}
         <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
              alt="Sin imagen"

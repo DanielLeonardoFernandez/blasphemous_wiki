@@ -11,8 +11,7 @@
     <!-- Imagen principal -->
     {% if interaccion.imagen_url %}
         <img src="{{ interaccion.imagen_url }}"
-             alt="{{ interaccion.nombre }}"
-             style="width: 100%; max-height: 400px; object-fit: cover; border-radius: 8px; margin-bottom: 20px;">
+             alt="{{ interaccion.nombre }}" class="interaccion-img">
     {% else %}
         <img src="https://via.placeholder.com/1200x400?text=Sin+imagen"
              alt="Sin imagen"
